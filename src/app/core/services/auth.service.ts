@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { Observable, map, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthResponse, LoginRequest, User } from '../models/auth.model';
 
@@ -15,11 +15,12 @@ export class AuthService {
     currentUser = signal<User | null>(null);
 
     login(credentials: LoginRequest): Observable<AuthResponse> {
-        return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, credentials).pipe(
+        return this.http.post<{ data: AuthResponse }>(`${environment.apiUrl}/auth/login`, credentials).pipe(
             tap((res) => {
-                localStorage.setItem(TOKEN_KEY, res.accessToken);
-                if (res.user) this.currentUser.set(res.user);
-            })
+                localStorage.setItem(TOKEN_KEY, res.data.accessToken);
+                if (res.data.user) this.currentUser.set(res.data.user);
+            }),
+            map((res) => res.data)
         );
     }
 
@@ -45,7 +46,8 @@ export class AuthService {
     }
 
     loadCurrentUser(): Observable<User> {
-        return this.http.get<User>(`${environment.apiUrl}/auth/me`).pipe(
+        return this.http.get<{ data: User }>(`${environment.apiUrl}/auth/me`).pipe(
+            map((res) => res.data),
             tap((user) => this.currentUser.set(user))
         );
     }
