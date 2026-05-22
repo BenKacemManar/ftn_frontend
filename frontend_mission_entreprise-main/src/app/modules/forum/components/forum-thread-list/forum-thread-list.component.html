@@ -1,0 +1,40 @@
+<div class="min-h-screen bg-ftn-bg">
+  <div class="hero-animated px-6 pt-9 pb-7">
+    <div class="max-w-5xl mx-auto">
+      <a routerLink="/forum" class="text-xs font-bold text-blue-300 hover:text-white mb-2 block no-underline">← Forum</a>
+      <h1 class="text-3xl font-extrabold text-white mb-1">{{ category?.nom || '…' }}</h1>
+      <p class="text-sm" style="color:rgba(255,255,255,.55)">{{ category?.description }}</p>
+    </div>
+  </div>
+
+  <div class="max-w-5xl mx-auto px-6 py-6">
+    <div *ngIf="loading" class="flex justify-center py-24">
+      <div class="w-10 h-10 border-4 border-ftn-surface border-t-primary rounded-full animate-spin"></div>
+    </div>
+
+    <div *ngIf="!loading" class="flex flex-col gap-3">
+      <div *ngFor="let t of threads" (click)="goToThread(t.id)"
+           class="bg-white rounded-2xl border border-ftn-border p-5 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex items-start gap-4">
+        <div class="flex flex-col items-center flex-shrink-0 text-center" style="min-width:50px">
+          <span *ngIf="t.epingle" class="text-amber-500 text-sm mb-1">📌</span>
+          <span *ngIf="t.ferme" class="text-gray-400 text-sm mb-1">🔒</span>
+          <div class="text-xl font-extrabold text-blue-600 stat-value">{{ t.nbReponses }}</div>
+          <div class="text-[9px] uppercase tracking-wide text-ftn-muted">réponses</div>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h3 class="font-extrabold text-gray-900 text-sm leading-snug mb-1">{{ t.titre }}</h3>
+          <p class="text-xs text-ftn-muted truncate">{{ t.contenu }}</p>
+          <div class="flex items-center gap-3 mt-2 text-xs text-ftn-muted">
+            <span>👤 {{ t.auteurPrenom }} {{ t.auteurNom }}</span>
+            <span>👁️ {{ t.nbVues }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="threads.length === 0" class="bg-white rounded-2xl border border-ftn-border py-24 flex flex-col items-center gap-3">
+        <span class="text-5xl" style="opacity:.1">💬</span>
+        <p class="font-semibold text-ftn-muted">Aucun sujet dans cette catégorie.</p>
+      </div>
+    </div>
+  </div>
+</div>

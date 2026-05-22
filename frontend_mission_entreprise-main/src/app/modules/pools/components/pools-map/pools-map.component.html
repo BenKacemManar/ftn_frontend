@@ -1,0 +1,100 @@
+<div class="min-h-screen bg-ftn-bg">
+  <div class="hero-animated px-6 pt-9 pb-7">
+    <div class="max-w-7xl mx-auto">
+      <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:rgba(0,200,240,.85)">Infrastructure</p>
+      <h1 class="text-3xl font-extrabold text-white mb-1">Piscines FTN</h1>
+      <p class="text-sm" style="color:rgba(255,255,255,.55)">{{ pools.length }} piscines affiliées à la fédération</p>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-6 py-6">
+    <div *ngIf="loading" class="flex justify-center py-24">
+      <div class="w-10 h-10 border-4 border-ftn-surface border-t-primary rounded-full animate-spin"></div>
+    </div>
+
+    <div *ngIf="!loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div *ngFor="let pool of pools"
+           class="bg-white rounded-2xl border border-ftn-border overflow-hidden shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200">
+        <!-- Header -->
+        <div class="h-2" style="background:linear-gradient(90deg,#0057FF,#00C8F0)"></div>
+        <div class="p-5">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div>
+              <h3 class="font-extrabold text-gray-900 text-sm leading-tight">{{ pool.nom }}</h3>
+              <p class="text-xs text-ftn-muted flex items-center gap-1 mt-0.5">📍 {{ pool.ville }}</p>
+            </div>
+            <span class="flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                  [class.bg-green-100]="pool.actif" [class.text-green-700]="pool.actif"
+                  [class.bg-gray-100]="!pool.actif" [class.text-gray-500]="!pool.actif">
+              {{ pool.actif ? 'Ouverte' : 'Fermée' }}
+            </span>
+          </div>
+
+          <!-- Specs -->
+          <div class="grid grid-cols-3 gap-2 mb-4">
+            <div class="text-center rounded-xl py-2" style="background:#EEF4FF">
+              <div class="text-sm font-extrabold text-blue-700">{{ pool.longueur }}m</div>
+              <div class="text-[9px] font-bold uppercase tracking-wide text-blue-500">Longueur</div>
+            </div>
+            <div class="text-center rounded-xl py-2" style="background:#ECFDF5">
+              <div class="text-sm font-extrabold text-green-700">{{ pool.nbCouloirs }}</div>
+              <div class="text-[9px] font-bold uppercase tracking-wide text-green-500">Couloirs</div>
+            </div>
+            <div class="text-center rounded-xl py-2" style="background:#F3EEFF">
+              <div class="text-sm font-extrabold text-purple-700">{{ pool.type || '—' }}</div>
+              <div class="text-[9px] font-bold uppercase tracking-wide text-purple-400">Type</div>
+            </div>
+          </div>
+
+          <button (click)="openSchedule(pool)"
+                  class="w-full py-2 text-sm font-bold text-blue-600 border-2 border-blue-200 rounded-xl hover:bg-blue-50 transition-colors cursor-pointer bg-transparent">
+            📅 Voir les créneaux
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && pools.length === 0"
+         class="bg-white rounded-2xl border border-ftn-border py-24 flex flex-col items-center gap-3">
+      <span class="text-5xl" style="opacity:.1">🏊</span>
+      <p class="font-semibold text-ftn-muted">Aucune piscine disponible.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Schedule Modal -->
+<div *ngIf="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4"
+     style="background:rgba(0,0,0,.5)" (click)="closeModal()">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[80vh] overflow-y-auto"
+       (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-extrabold text-gray-900">{{ selectedPool?.nom }}</h2>
+      <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl bg-transparent border-none cursor-pointer">✕</button>
+    </div>
+
+    <div *ngIf="loadingSchedules" class="flex justify-center py-8">
+      <div class="w-8 h-8 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
+    </div>
+
+    <div *ngIf="!loadingSchedules && schedules.length === 0" class="text-center py-10 text-ftn-muted text-sm">
+      Aucun créneau disponible pour cette piscine.
+    </div>
+
+    <div *ngIf="!loadingSchedules" class="flex flex-col gap-2">
+      <div *ngFor="let s of schedules"
+           class="flex items-center justify-between p-3 rounded-xl border border-ftn-border">
+        <div>
+          <p class="font-semibold text-sm text-gray-900">{{ s.purpose }}</p>
+          <p class="text-xs text-ftn-muted mt-0.5">{{ formatDt(s.startDateTime) }} → {{ formatDt(s.endDateTime) }}</p>
+        </div>
+        <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full"
+              [class.bg-blue-100]="s.status === 'SCHEDULED'" [class.text-blue-700]="s.status === 'SCHEDULED'"
+              [class.bg-green-100]="s.status === 'ACTIVE'" [class.text-green-700]="s.status === 'ACTIVE'"
+              [class.bg-gray-100]="s.status === 'COMPLETED' || s.status === 'CANCELLED'"
+              [class.text-gray-500]="s.status === 'COMPLETED' || s.status === 'CANCELLED'">
+          {{ s.status }}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

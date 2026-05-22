@@ -1,0 +1,31 @@
+<div class="min-h-screen bg-ftn-bg">
+  <div *ngIf="loading" class="flex justify-center py-32">
+    <div class="w-12 h-12 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
+  </div>
+
+  <div *ngIf="!loading && news" class="max-w-3xl mx-auto px-6 py-10">
+    <a routerLink="/news" class="text-sm font-bold text-blue-600 hover:underline no-underline flex items-center gap-1 mb-6">← Actualités</a>
+
+    <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase bg-blue-100 text-blue-700 mb-4">
+      {{ news.categorie }}
+    </span>
+
+    <h1 class="text-3xl font-extrabold text-gray-900 mb-3 leading-tight">{{ news.titre }}</h1>
+
+    <p class="text-sm text-ftn-muted mb-6">
+      {{ formatDate(news.datePublication || news.createdAt) }}
+      <span *ngIf="news.auteurNom"> · par {{ news.auteurNom }}</span>
+    </p>
+
+    <img *ngIf="news.imageUrl" [src]="news.imageUrl" [alt]="news.titre"
+         class="w-full rounded-2xl mb-6 object-cover" style="max-height:400px"/>
+
+    <div class="prose prose-lg text-gray-700 leading-relaxed whitespace-pre-wrap">{{ news.contenu }}</div>
+  </div>
+
+  <div *ngIf="!loading && !news" class="flex flex-col items-center gap-3 py-32">
+    <span class="text-5xl" style="opacity:.1">📰</span>
+    <p class="font-semibold text-ftn-muted">Article non trouvé.</p>
+    <a routerLink="/news" class="text-sm font-bold text-blue-600 hover:underline no-underline">← Retour aux actualités</a>
+  </div>
+</div>

@@ -1,0 +1,41 @@
+<div class="min-h-screen bg-ftn-bg">
+  <div class="hero-animated px-6 pt-9 pb-7">
+    <div class="max-w-7xl mx-auto">
+      <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:rgba(0,200,240,.85)">Communauté</p>
+      <h1 class="text-3xl font-extrabold text-white mb-1">Forum FTN</h1>
+      <p class="text-sm" style="color:rgba(255,255,255,.55)">Espace d'échange de la communauté nationale de natation.</p>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-6 py-6">
+    <div *ngIf="loading" class="flex justify-center py-24">
+      <div class="w-10 h-10 border-4 border-ftn-surface border-t-primary rounded-full animate-spin"></div>
+    </div>
+
+    <div *ngIf="!loading" class="flex flex-col gap-4">
+      <div *ngFor="let cat of categories"
+           [routerLink]="['/forum/category', cat.id]"
+           class="bg-white rounded-2xl border border-ftn-border p-5 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex items-center gap-5">
+        <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
+             style="background:linear-gradient(135deg,#0057FF,#00C8F0)">
+          💬
+        </div>
+        <div class="flex-1 min-w-0">
+          <h3 class="font-extrabold text-gray-900 text-base leading-tight">{{ cat.nom }}</h3>
+          <p class="text-sm text-ftn-muted mt-0.5 truncate">{{ cat.description }}</p>
+        </div>
+        <div class="flex-shrink-0 text-right">
+          <div class="text-2xl font-extrabold text-blue-600 stat-value">{{ cat.nbSujets }}</div>
+          <div class="text-[10px] font-bold uppercase tracking-wide text-ftn-muted">sujets</div>
+        </div>
+        <span class="text-ftn-muted text-lg ml-2">→</span>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && categories.length === 0"
+         class="bg-white rounded-2xl border border-ftn-border py-24 flex flex-col items-center gap-3">
+      <span class="text-5xl" style="opacity:.1">💬</span>
+      <p class="font-semibold text-ftn-muted">Aucune catégorie disponible.</p>
+    </div>
+  </div>
+</div>

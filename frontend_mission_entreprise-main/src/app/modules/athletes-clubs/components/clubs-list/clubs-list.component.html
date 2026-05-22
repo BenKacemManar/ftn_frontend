@@ -1,0 +1,66 @@
+<div class="min-h-screen bg-ftn-bg">
+  <div class="hero-animated px-6 pt-9 pb-7">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:rgba(0,200,240,.85)">FTN</p>
+        <h1 class="text-3xl font-extrabold text-white mb-1">Clubs Affiliés</h1>
+        <p class="text-sm" style="color:rgba(255,255,255,.55)">{{ total }} clubs affiliés à la fédération</p>
+      </div>
+      <a routerLink="/athletes"
+         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-white rounded-xl no-underline"
+         style="background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2)">
+        🏊 Voir les athlètes
+      </a>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-6 py-6">
+    <!-- Search -->
+    <div class="bg-white rounded-xl border border-ftn-border p-4 flex gap-3 items-center mb-6 shadow-card">
+      <input type="text" [(ngModel)]="search" (input)="load()" placeholder="Rechercher un club…"
+             class="flex-1 text-sm border border-ftn-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+    </div>
+
+    <div *ngIf="loading" class="flex justify-center py-24">
+      <div class="w-10 h-10 border-4 border-ftn-surface border-t-primary rounded-full animate-spin"></div>
+    </div>
+
+    <div *ngIf="!loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div *ngFor="let club of clubs; let i = index"
+           (click)="goToDetail(club.id)"
+           class="bg-white rounded-2xl border border-ftn-border overflow-hidden shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+        <!-- Color header -->
+        <div class="h-2" [style.background]="getColorForClub(i)"></div>
+        <div class="p-5">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-extrabold text-lg"
+                 [style.background]="getColorForClub(i)">
+              {{ (club.nom || '?')[0].toUpperCase() }}
+            </div>
+            <div>
+              <h3 class="font-extrabold text-gray-900 text-sm leading-tight">{{ club.nom }}</h3>
+              <p class="text-xs text-ftn-muted">{{ club.ville }}<span *ngIf="club.region"> · {{ club.region }}</span></p>
+            </div>
+            <span class="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                  [class.bg-green-100]="club.actif" [class.text-green-700]="club.actif"
+                  [class.bg-gray-100]="!club.actif" [class.text-gray-500]="!club.actif">
+              {{ club.actif ? 'Actif' : 'Inactif' }}
+            </span>
+          </div>
+          <p *ngIf="club.presidentNom" class="text-xs text-ftn-muted flex items-center gap-1">
+            👤 {{ club.presidentNom }}
+          </p>
+          <p *ngIf="club.dateAffiliation" class="text-xs text-ftn-muted flex items-center gap-1 mt-0.5">
+            📅 Affilié le {{ club.dateAffiliation | date:'dd/MM/yyyy' }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && clubs.length === 0"
+         class="bg-white rounded-2xl border border-ftn-border py-24 flex flex-col items-center gap-3">
+      <span class="text-5xl" style="opacity:.1">🏛️</span>
+      <p class="font-semibold text-ftn-muted">Aucun club trouvé.</p>
+    </div>
+  </div>
+</div>

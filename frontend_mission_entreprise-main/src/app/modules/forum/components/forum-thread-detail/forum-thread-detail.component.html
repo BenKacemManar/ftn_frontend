@@ -1,0 +1,63 @@
+<div class="min-h-screen bg-ftn-bg">
+  <div class="hero-animated px-6 pt-9 pb-7" *ngIf="thread">
+    <div class="max-w-4xl mx-auto">
+      <a [routerLink]="['/forum/category', thread.forumId]" class="text-xs font-bold text-blue-300 hover:text-white mb-2 block no-underline">← {{ thread.forumNom }}</a>
+      <h1 class="text-2xl font-extrabold text-white mb-1">{{ thread.titre }}</h1>
+      <p class="text-sm" style="color:rgba(255,255,255,.55)">{{ thread.nbReponses }} réponse(s) · {{ thread.nbVues }} vue(s)</p>
+    </div>
+  </div>
+
+  <div class="max-w-4xl mx-auto px-6 py-6 flex flex-col gap-4">
+    <div *ngIf="loading" class="flex justify-center py-24">
+      <div class="w-10 h-10 border-4 border-ftn-surface border-t-primary rounded-full animate-spin"></div>
+    </div>
+
+    <!-- Thread OP -->
+    <div *ngIf="thread" class="bg-white rounded-2xl border-2 border-blue-200 p-5 shadow-card">
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold">
+          {{ (thread.auteurPrenom || '?')[0] }}
+        </div>
+        <div>
+          <p class="font-bold text-sm text-gray-900">{{ thread.auteurPrenom }} {{ thread.auteurNom }}</p>
+          <p class="text-xs text-ftn-muted">{{ thread.dateCreation | date:'dd/MM/yyyy HH:mm' }}</p>
+        </div>
+      </div>
+      <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{{ thread.contenu }}</p>
+    </div>
+
+    <!-- Posts -->
+    <div *ngFor="let post of posts; let i = index"
+         class="bg-white rounded-2xl border border-ftn-border p-5 shadow-card">
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold"
+             style="background:#7C3AED">
+          {{ (post.auteurPrenom || '?')[0] }}
+        </div>
+        <div>
+          <p class="font-semibold text-sm text-gray-900">{{ post.auteurPrenom }} {{ post.auteurNom }}</p>
+          <p class="text-xs text-ftn-muted">{{ post.dateCreation | date:'dd/MM/yyyy HH:mm' }}</p>
+        </div>
+        <span class="ml-auto text-xs text-ftn-muted">#{{ i + 1 }}</span>
+      </div>
+      <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{{ post.contenu }}</p>
+    </div>
+
+    <!-- Reply form -->
+    <div *ngIf="!thread?.ferme" class="bg-white rounded-2xl border border-ftn-border p-5 shadow-card">
+      <h3 class="font-extrabold text-gray-900 mb-3">Répondre</h3>
+      <textarea [(ngModel)]="replyContent" rows="4" placeholder="Votre réponse…"
+                class="w-full text-sm border border-ftn-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none mb-3"></textarea>
+      <button (click)="submitReply()" [disabled]="submitting || !replyContent.trim()"
+              class="px-6 py-2.5 text-sm font-bold text-white rounded-xl disabled:opacity-50 border-none cursor-pointer"
+              style="background:linear-gradient(135deg,#0057FF,#0048D4)">
+        {{ submitting ? 'Envoi…' : 'Envoyer la réponse' }}
+      </button>
+    </div>
+
+    <div *ngIf="thread?.ferme"
+         class="bg-gray-50 rounded-xl border border-gray-200 p-4 text-center text-sm text-ftn-muted">
+      🔒 Ce sujet est verrouillé — les réponses sont désactivées.
+    </div>
+  </div>
+</div>

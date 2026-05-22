@@ -1,0 +1,97 @@
+<div class="min-h-screen bg-ftn-bg" *ngIf="!loading && club">
+  <div class="hero-animated px-6 pt-9 pb-8">
+    <div class="max-w-5xl mx-auto">
+      <a routerLink="/athletes/clubs" class="text-xs font-bold text-blue-300 hover:text-white mb-2 block no-underline">← Clubs</a>
+      <div class="flex items-center gap-4">
+        <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-3xl font-extrabold flex-shrink-0"
+             style="background:rgba(255,255,255,.15)">
+          {{ (club.nom || '?')[0].toUpperCase() }}
+        </div>
+        <div>
+          <h1 class="text-3xl font-extrabold text-white">{{ club.nom }}</h1>
+          <p class="text-sm" style="color:rgba(255,255,255,.6)">{{ club.ville }}<span *ngIf="club.region"> · {{ club.region }}</span></p>
+        </div>
+        <span class="ml-auto px-3 py-1 rounded-full text-xs font-bold"
+              [class.bg-green-500]="club.actif" [class.text-white]="club.actif"
+              [class.bg-gray-500]="!club.actif">
+          {{ club.actif ? 'Actif' : 'Inactif' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-5xl mx-auto px-6 py-6">
+    <!-- Info grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+      <div *ngIf="club.presidentNom" class="bg-white rounded-xl border border-ftn-border p-4 shadow-card">
+        <p class="text-xs font-bold uppercase tracking-wide text-ftn-muted mb-1">Président</p>
+        <p class="font-bold text-gray-900 text-sm">{{ club.presidentNom }}</p>
+      </div>
+      <div *ngIf="club.dateAffiliation" class="bg-white rounded-xl border border-ftn-border p-4 shadow-card">
+        <p class="text-xs font-bold uppercase tracking-wide text-ftn-muted mb-1">Affiliation</p>
+        <p class="font-bold text-gray-900 text-sm">{{ club.dateAffiliation | date:'dd/MM/yyyy' }}</p>
+      </div>
+      <div class="bg-white rounded-xl border border-ftn-border p-4 shadow-card">
+        <p class="text-xs font-bold uppercase tracking-wide text-ftn-muted mb-1">Membres</p>
+        <p class="font-bold text-blue-600 text-xl stat-value">{{ members.length }}</p>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-1 mb-4 bg-white rounded-xl border border-ftn-border p-1 shadow-card w-fit">
+      <button (click)="activeTab='athletes'" [class.bg-blue-600]="activeTab==='athletes'" [class.text-white]="activeTab==='athletes'"
+              class="px-4 py-2 text-sm font-bold rounded-lg transition-all cursor-pointer border-none" [class.text-ftn-muted]="activeTab!=='athletes'">
+        🏊 Athlètes ({{ athletes.length }})
+      </button>
+      <button (click)="activeTab='members'" [class.bg-blue-600]="activeTab==='members'" [class.text-white]="activeTab==='members'"
+              class="px-4 py-2 text-sm font-bold rounded-lg transition-all cursor-pointer border-none" [class.text-ftn-muted]="activeTab!=='members'">
+        👥 Membres ({{ members.length }})
+      </button>
+    </div>
+
+    <!-- Members tab -->
+    <div *ngIf="activeTab === 'members'" class="flex flex-col gap-3">
+      <div *ngFor="let m of members" class="bg-white rounded-xl border border-ftn-border p-4 shadow-card flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold text-sm">
+          {{ (m.userFirstName || '?')[0] }}
+        </div>
+        <div>
+          <p class="font-bold text-sm text-gray-900">{{ m.userFirstName }} {{ m.userLastName }}</p>
+          <p class="text-xs text-ftn-muted">{{ m.role }}</p>
+        </div>
+        <span *ngIf="m.isCurrent" class="ml-auto text-[10px] font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Actuel</span>
+      </div>
+      <div *ngIf="members.length === 0" class="text-center py-10 text-ftn-muted text-sm">Aucun membre enregistré.</div>
+    </div>
+
+    <!-- Athletes tab -->
+    <div *ngIf="activeTab === 'athletes'">
+      <div *ngIf="athletes.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div *ngFor="let a of athletes"
+             (click)="goToAthlete(a.id)"
+             class="bg-white rounded-xl border border-ftn-border p-4 shadow-card flex items-center gap-3 cursor-pointer hover:border-blue-400 hover:shadow-md transition-all">
+          <div class="w-11 h-11 rounded-full bg-blue-600 flex items-center justify-center text-white font-extrabold text-sm flex-shrink-0">
+            {{ getInitials(a) }}
+          </div>
+          <div class="min-w-0">
+            <p class="font-bold text-sm text-gray-900 truncate">{{ a.prenom }} {{ a.nom }}</p>
+            <p class="text-xs text-ftn-muted">{{ a.categorie }} · {{ a.sexe === 'MASCULIN' ? 'H' : 'F' }}</p>
+          </div>
+          <span class="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0"
+                [class.bg-blue-100]="a.sexe === 'MASCULIN'" [class.text-blue-700]="a.sexe === 'MASCULIN'"
+                [class.bg-pink-100]="a.sexe !== 'MASCULIN'" [class.text-pink-700]="a.sexe !== 'MASCULIN'">
+            {{ a.sexe === 'MASCULIN' ? '♂' : '♀' }}
+          </span>
+        </div>
+      </div>
+      <div *ngIf="athletes.length === 0" class="bg-white rounded-xl border border-ftn-border py-16 flex flex-col items-center gap-3">
+        <span class="text-4xl" style="opacity:.15">🏊</span>
+        <p class="text-sm text-ftn-muted">Aucun athlète enregistré dans ce club.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="loading" class="flex justify-center py-32">
+  <div class="w-12 h-12 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
+</div>

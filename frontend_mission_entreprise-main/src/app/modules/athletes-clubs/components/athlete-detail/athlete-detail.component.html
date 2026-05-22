@@ -1,0 +1,64 @@
+<div class="min-h-screen bg-ftn-bg" *ngIf="!loading && athlete">
+  <div class="hero-animated px-6 pt-9 pb-8" style="background:linear-gradient(135deg,#1e3a5f,#2563eb)">
+    <div class="max-w-4xl mx-auto">
+      <a routerLink="/athletes" class="text-xs font-bold text-blue-300 hover:text-white mb-3 block no-underline">← Athlètes</a>
+      <div class="flex items-center gap-5">
+        <div class="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-extrabold flex-shrink-0"
+             style="background:rgba(255,255,255,.2)">
+          {{ getInitials() }}
+        </div>
+        <div>
+          <h1 class="text-3xl font-extrabold text-white">{{ athlete.prenom }} {{ athlete.nom }}</h1>
+          <p class="text-sm" style="color:rgba(255,255,255,.65)">{{ athlete.categorie }} · {{ athlete.sexe === 'MASCULIN' ? 'Homme' : 'Femme' }}</p>
+          <p *ngIf="athlete.clubNom" class="text-sm font-semibold" style="color:rgba(255,255,255,.8)">🏛️ {{ athlete.clubNom }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-4xl mx-auto px-6 py-6">
+    <!-- Info grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+      <div *ngIf="athlete.nationalite" class="bg-white rounded-xl border border-ftn-border p-4 shadow-card">
+        <p class="text-xs font-bold uppercase tracking-wide text-ftn-muted mb-1">Nationalité</p>
+        <p class="font-bold text-gray-900 text-sm">{{ athlete.nationalite }}</p>
+      </div>
+      <div *ngIf="athlete.dateNaissance" class="bg-white rounded-xl border border-ftn-border p-4 shadow-card">
+        <p class="text-xs font-bold uppercase tracking-wide text-ftn-muted mb-1">Date de naissance</p>
+        <p class="font-bold text-gray-900 text-sm">{{ athlete.dateNaissance | date:'dd/MM/yyyy' }}</p>
+      </div>
+      <div class="bg-white rounded-xl border border-ftn-border p-4 shadow-card">
+        <p class="text-xs font-bold uppercase tracking-wide text-ftn-muted mb-1">Catégorie</p>
+        <p class="font-bold text-blue-600 text-sm">{{ athlete.categorie }}</p>
+      </div>
+      <div class="bg-white rounded-xl border border-ftn-border p-4 shadow-card">
+        <p class="text-xs font-bold uppercase tracking-wide text-ftn-muted mb-1">Licences</p>
+        <p class="font-bold text-gray-900 text-xl stat-value">{{ licences.length }}</p>
+      </div>
+    </div>
+
+    <!-- Licences -->
+    <h2 class="text-lg font-extrabold text-gray-900 mb-3">Historique des licences</h2>
+    <div class="flex flex-col gap-2">
+      <div *ngFor="let lic of licences" class="bg-white rounded-xl border border-ftn-border p-4 shadow-card flex items-center justify-between">
+        <div>
+          <p class="font-bold text-sm text-gray-900">N° {{ lic.numero }}</p>
+          <p class="text-xs text-ftn-muted">
+            {{ lic.type }}
+            <span *ngIf="lic.dateDebut"> · {{ lic.dateDebut | date:'dd/MM/yyyy' }} → {{ lic.dateExpiration | date:'dd/MM/yyyy' }}</span>
+          </p>
+        </div>
+        <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full"
+              [class.bg-green-100]="lic.statut === 'ACTIVE'" [class.text-green-700]="lic.statut === 'ACTIVE'"
+              [class.bg-gray-100]="lic.statut !== 'ACTIVE'" [class.text-gray-500]="lic.statut !== 'ACTIVE'">
+          {{ lic.statut }}
+        </span>
+      </div>
+      <div *ngIf="licences.length === 0" class="text-center py-8 text-sm text-ftn-muted">Aucune licence enregistrée.</div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="loading" class="flex justify-center py-32">
+  <div class="w-12 h-12 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
+</div>

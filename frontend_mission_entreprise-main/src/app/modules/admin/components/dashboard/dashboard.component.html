@@ -1,0 +1,36 @@
+<div class="min-h-screen bg-ftn-bg">
+  <div class="hero-animated px-6 pt-9 pb-7">
+    <div class="max-w-7xl mx-auto">
+      <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:rgba(0,200,240,.85)">Admin</p>
+      <h1 class="text-3xl font-extrabold text-white mb-1">Tableau de bord</h1>
+      <p class="text-sm" style="color:rgba(255,255,255,.55)">Vue d'ensemble de la plateforme FTN.</p>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-6 py-8">
+
+    <!-- Stat cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <a *ngFor="let s of stats" [routerLink]="s.link"
+         class="bg-white rounded-2xl p-5 shadow-card border border-ftn-border hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 no-underline block">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-3" [style.background]="s.bg">
+          {{ s.icon }}
+        </div>
+        <div class="text-3xl font-extrabold stat-value mb-1" [style.color]="s.color">{{ s.value }}</div>
+        <div class="text-xs font-bold uppercase tracking-widest text-ftn-muted">{{ s.label }}</div>
+      </a>
+    </div>
+
+    <!-- Quick links -->
+    <h2 class="text-lg font-extrabold text-gray-900 mb-4">Accès rapide</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <a *ngFor="let q of quickLinks" [routerLink]="q.link"
+         class="flex items-center gap-3 bg-white rounded-xl px-5 py-4 shadow-card border border-ftn-border hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 no-underline">
+        <span class="text-2xl">{{ q.icon }}</span>
+        <span class="font-semibold text-gray-800 text-sm">{{ q.label }}</span>
+        <span class="ml-auto text-ftn-muted text-sm">→</span>
+      </a>
+    </div>
+
+  </div>
+</div>
