@@ -1,0 +1,206 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{hyperref}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{Athletix Governance: Design and Development of a Federal Digital Platform for the Tunisian Swimming Federation}
+
+\author{
+\IEEEauthorblockN{Alaa Ben Chouikha}
+\IEEEauthorblockA{Class 1ALINFO1 \\ ESPRIT School of Engineering \\ Tunis, Tunisia \\ alaa.benchouikha@esprit.tn}
+\and
+\IEEEauthorblockN{Manar Ben Kacem}
+\IEEEauthorblockA{Class 1ALINFO1 \\ ESPRIT School of Engineering \\ Tunis, Tunisia \\ manar.benkacem@esprit.tn}
+\and
+\IEEEauthorblockN{Elaa}
+\IEEEauthorblockA{Class 1ALINFO1 \\ ESPRIT School of Engineering \\ Tunis, Tunisia \\ elaa@esprit.tn}
+\and
+\IEEEauthorblockN{Mazen Jebali}
+\IEEEauthorblockA{Class 1ALINFO1 \\ ESPRIT School of Engineering \\ Tunis, Tunisia \\ mazen.jebali@esprit.tn}
+\and
+\IEEEauthorblockN{Montassar Tayari}
+\IEEEauthorblockA{Class 1ALINFO1 \\ ESPRIT School of Engineering \\ Tunis, Tunisia \\ montassar.tayari@esprit.tn}
+}
+
+\maketitle
+
+\begin{abstract}
+The Tunisian Swimming Federation (FTN) governs all aquatic sports in Tunisia (competitive swimming, open water, artistic swimming, diving, water polo), yet currently relies on a static, content-only WordPress website with no advanced user interaction. This paper presents the study, design, and development of \emph{Athletix Governance}, a federal digital platform intended to replace this legacy site. Building on an analysis of the existing system and the needs of four identified actor categories (public, athletes, coaches/clubs, federation administrators), we specify ten functional requirements and eight non-functional requirements, then propose an eight-module architecture: six core modules (authentication, competitions, results and rankings, clubs, content, training programs) and two value-added modules (affiliated swimming-pool management with online slot booking and club lane assignment, and a community forum), the latter two being absent from every African aquatic federation website surveyed. The solution is implemented with a Spring Boot REST API, schema migrations versioned through Liquibase, JWT-based authentication, and a modular Angular frontend built on reactive signals. Results show that this architecture modernizes competition, license, and results management while remaining maintainable and scalable.
+\end{abstract}
+
+\begin{IEEEkeywords}
+federal digital platform, sports competition management, Spring Boot, Angular, digital transformation, swimming federation, REST architecture
+\end{IEEEkeywords}
+
+\section{Introduction}
+The Tunisian Swimming Federation (FTN) is the official body governing aquatic sports in Tunisia. It federates all clubs practicing competitive swimming, open-water swimming, artistic swimming, diving, and water polo, organizes national competitions, and manages the national teams. It is a member of \emph{Africa Aquatics} and \emph{World Aquatics}, and is headquartered at the Maison des Fédérations Sportives, Cité Olympique El Menzah, Tunis.
+
+Despite this central role in the national sports ecosystem, the FTN's digital presence relies on an institutional website (\texttt{ftnatation.tn}) designed as a simple content showcase: news, results, calendars, and official documents are published manually, with no personal space for athletes or clubs and no transactional features (online competition registration, dematerialized license requests). This creates a growing gap between the expectations of modern digital sport users and the federation's actual digital offering.
+
+The objective of this work is twofold: (1) conduct a structured study of the existing system to precisely identify the current site's limitations and the needs of the federation's various actors, and (2) design and develop a federal digital platform, \emph{Athletix Governance}, that addresses these needs through a modern, secure, and scalable modular architecture. The remainder of this paper is organized as follows: Section II presents the existing-system study, Section III details the actors and functional/non-functional requirements, Section IV describes the modular architecture of the solution, Section V presents the technical implementation, Section VI discusses the solution's added value, and Section VII concludes with perspectives for future work.
+
+\section{Existing System Analysis}
+\subsection{Analysis of the current website}
+The website \texttt{ftnatation.tn} is built on WordPress and organizes its content into seven main sections: \emph{The Tunisian Federation} (regulations, organizational chart, affiliated clubs, technical staff), \emph{Swimming}, \emph{Open Water}, and \emph{Water Polo} (results, rankings, schedules, national teams, and national calendar for each discipline), \emph{Swimming Academy} (program and news), \emph{Licenses} (per-club listing), and \emph{Press Corner} (articles and press releases). This structure repeats the same sub-sections for every discipline without offering a consolidated view.
+
+\subsection{Identified limitations}
+The analysis reveals seven major categories of limitations.
+
+\begin{enumerate}
+\item \textbf{Aging, non-responsive interface} — outdated WordPress theme, menus and tables illegible on mobile, no UX/UI optimization since the site's creation.
+\item \textbf{Inconsistent bilingual content} — no language switcher, pages either entirely in Arabic or entirely in French with no systematic translation.
+\item \textbf{Lack of interactive features} — no online competition registration nor dematerialized license requests; all procedures require a phone call or a physical visit.
+\item \textbf{No real-time competition management} — results published manually as PDF or HTML files, no automatic ranking updates, information often published several days late.
+\item \textbf{Unintuitive navigation} — nested menus, redundant sub-sections, no internal search engine.
+\item \textbf{No secure member space} — no authentication system: an athlete cannot view their performance history, a club cannot manage its members online.
+\item \textbf{Rudimentary media management and no public API} — no photo/video gallery, uncategorized news, no programmatic access to federation data, technically isolating the federation from its digital ecosystem.
+\end{enumerate}
+
+The current site therefore remains a content-oriented institutional site with no advanced user interaction. This observation is the starting point for the target-solution specification presented in the following sections.
+
+\section{Actors and Requirements}
+\subsection{System actors}
+Four actor categories were identified, summarized in Table~\ref{tab:actors}.
+
+\begin{table}[h]
+\caption{System actors}
+\label{tab:actors}
+\centering
+\begin{tabular}{p{1.6cm}p{4.8cm}p{1.3cm}}
+\toprule
+\textbf{Actor} & \textbf{Description} & \textbf{Access} \\
+\midrule
+Public / Media & Unauthenticated visitors consulting results, news, calendar & Public \\
+Athlete & Licensed member managing their profile, results, and registrations & Authenticated \\
+Coach / Club & Responsible for managing club athletes and competition entries & Authenticated \\
+Federation Admin & Platform manager (content, licenses, competitions, users) & Admin \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Functional requirements}
+Table~\ref{tab:fr} summarizes the ten functional requirements (FR) identified from the actor and use-case analysis.
+
+\begin{table}[h]
+\caption{Functional requirements}
+\label{tab:fr}
+\centering
+\begin{tabular}{p{0.5cm}p{6cm}p{0.9cm}}
+\toprule
+\textbf{ID} & \textbf{Functional requirement} & \textbf{Prio.} \\
+\midrule
+FR-01 & User management: secure authentication, roles, access rights & High \\
+FR-02 & Athlete management: profiles, performance history, ranking & High \\
+FR-03 & Competition management: creation, calendar, results publication & High \\
+FR-04 & Online dematerialized registrations and licenses & High \\
+FR-05 & Event calendar with multi-criteria filters & High \\
+FR-06 & Advanced search engine (athletes, competitions, clubs) & Medium \\
+FR-07 & CMS for federal news and announcements & Medium \\
+FR-08 & Performance dashboards and statistics & Medium \\
+FR-09 & Affiliated pool management, interactive map, booking & High \\
+FR-10 & Community forum with moderation and Q\&A space & Medium \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Non-functional requirements}
+Eight non-functional requirements frame the design: \emph{performance} (under 2 seconds load time for main pages), \emph{security} (JWT authentication, HTTPS, BCrypt hashing, GDPR compliance), \emph{responsive design} (mobile, tablet, desktop adaptation), \emph{accessibility} (WCAG 2.1 level AA compliance), \emph{multilingual support} (Arabic RTL, French, English), \emph{scalability} (load spikes during major competitions), \emph{maintainability} (modular, documented, tested code), and \emph{reliability} (minimum 99.5\% availability).
+
+\section{Solution Architecture}
+The \emph{Athletix Governance} solution is divided into eight independent functional modules, each covering a complete business domain from the backend layer to the user interface. The first six modules are \emph{core} modules that modernize functionality already present on the existing site; the last two are \emph{value-added} modules, introducing services absent from the current site and, to our knowledge, from any other African aquatic federation website.
+
+\subsection{Module 1 — Authentication and User Management}
+Secure JWT-based authentication and role management, personal profile editing, license request submission and validation, full user CRUD with access-rights assignment.
+
+\subsection{Module 2 — Competition Management}
+Competition creation (discipline, dates, venue, categories), calendar browsing with filters (discipline, region, level), individual registration with automatic eligibility validation, bulk registration by coaches, modification/cancellation with automatic notification.
+
+\subsection{Module 3 — Results and Rankings}
+Official results entry and publication after each competition, filtered consultation by type, category, year, gender, and discipline, personal performance history, national ranking by discipline and age category, club performance dashboard.
+
+\subsection{Module 4 — Club Management}
+Public athlete profiles (record, club, discipline, nationality), club member CRUD with license tracking and competition assignment, affiliated club directory, key indicators (active licenses, clubs and athletes per region), assignment of a training pool and lane to each club, visible on its public page.
+
+\subsection{Module 5 — Content and Backoffice}
+Categorized news articles with pagination and search, CMS for publishing announcements and official documents, unified global search (athletes, competitions, clubs, articles), admin-managed media gallery, public dashboard of aggregate statistics (licenses, clubs, athletes) feeding the home page.
+
+\subsection{Module 6 — Training Programs}
+This module digitizes the \emph{Swimming Academy} section of the existing site: catalogue of training programs by age bracket (description, minimum/maximum age, visual, active/inactive status), full CRUD on the admin side, public listing of active programs on the home page to guide families toward the program suited to a child's age.
+
+\subsection{Module 7 — Pool Management (Value-Added)}
+This module centralizes affiliated aquatic infrastructure and introduces an online slot-booking system: geolocated interactive map, detailed per-pool sheet (capacity, 25m/50m pool types, opening hours, equipment), training slot booking, availability management and unavailability reporting by the administrator, multi-criteria filtering. It is also the source of the lanes assigned to clubs for their training sessions (see Module 4).
+
+\subsection{Module 8 — Community Forum (Value-Added)}
+A discussion space structured by category (swimming, water polo, open water, training), thread creation and replies, social interactions (like, report), pinning of official announcements, admin moderation, and a dedicated Q\&A space between coaches and athletes.
+
+Table~\ref{tab:modules} summarizes the use-case distribution per module.
+
+\begin{table}[h]
+\caption{Module summary}
+\label{tab:modules}
+\centering
+\begin{tabular}{p{0.9cm}p{3.3cm}p{1cm}p{1.6cm}}
+\toprule
+\textbf{Module} & \textbf{Name} & \textbf{UC} & \textbf{Type} \\
+\midrule
+M1 & Authentication \& Users & 5 & Core \\
+M2 & Competition Management & 5 & Core \\
+M3 & Results \& Rankings & 5 & Core \\
+M4 & Athletes \& Clubs & 4 & Core \\
+M5 & Content \& Backoffice & 4 & Core \\
+M6 & Training Programs & 4 & Core \\
+M7 & Pool Management & 6 & Value-added \\
+M8 & Community Forum & 7 & Value-added \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Technical Implementation}
+\subsection{Backend}
+The backend exposes a REST API built with \emph{Spring Boot}, organized into \texttt{Controller}/\texttt{Service}/\texttt{Repository} layers per business domain (competitions, events, results, rankings, club events, clubs, athletes, news). Persistence relies on a relational database whose schema is version-controlled with \emph{Liquibase}: every schema change is described by an XML \emph{changeset}, and table-creation changesets are made idempotent through \texttt{preConditions} (\texttt{onFail="MARK\_RAN"}) checking for the prior absence of the targeted table or column. This allows migrations originating from parallel development branches to be merged safely without risking a conflict on an already-initialized database. Authentication relies on JWT tokens with role-based access control (RBAC), in line with the security non-functional requirement specified in Section III-C.
+
+\subsection{Frontend}
+The frontend is built with \emph{Angular}, using \emph{standalone} components organized into lazily-loaded feature modules for each functional module (competitions, results, athletes/clubs, content, pools, forum, administration). Reactive component state is managed through the \emph{signals} API (\texttt{signal}, \texttt{computed}) rather than classic observable streams, simplifying local state management (filters, pagination, search) and improving code readability.
+
+\subsection{Deployment}
+The entire stack (backend API, database, frontend) is containerized and orchestrated through \emph{Docker Compose}, enabling reproducible deployment on any environment with a Docker engine.
+
+\section{Discussion}
+Modules 7 (pool management) and 8 (community forum) constitute the main added value of this platform compared to the existing site. To our knowledge, no African aquatic federation currently offers an online pool slot-booking system: this module reduces informal phone-based procedures, optimizes the use of national sports infrastructure, and constitutes a genuine differentiator for the FTN within its regional ecosystem. Similarly, the community forum centralizes exchanges currently scattered across unofficial social networks (WhatsApp, Facebook), while showcasing coach expertise through a dedicated Q\&A space and giving the federation an official, moderated communication channel.
+
+On the technical side, the choice of a modular architecture with idempotent migrations facilitates the continuous integration of modules developed in parallel by separate teams — a concrete constraint encountered during development, where several feature branches (competitions, news) had to be merged into the integration branch without regressing the database schema.
+
+\section{Conclusion and Future Work}
+This paper presented the existing-system study, requirements specification, and architecture of the \emph{Athletix Governance} federal digital platform, designed to replace the Tunisian Swimming Federation's current institutional website. The analysis revealed a limited site with no interaction or personal space for its actors; the proposed solution addresses these limitations through six core modules that modernize existing functionality and two value-added modules (pools, forum) that position the platform as a pioneer within the African sports federation ecosystem. The technical implementation carried out — Spring Boot REST API, idempotent Liquibase migrations, JWT authentication, reactive Angular frontend — demonstrates the viability of this architecture.
+
+Future work includes full interface internationalization (Arabic RTL, French, English), deployment of a companion mobile application, and the introduction of real-time notifications (results, license validation, pool slot availability) via WebSocket.
+
+\section*{Acknowledgment}
+The authors thank ESPRIT School of Engineering and the Tunisian Swimming Federation for the business context that made this academic project possible.
+
+\begin{thebibliography}{00}
+\bibitem{springboot} VMware/Spring Team, ``Spring Boot Reference Documentation,'' [Online]. Available: https://docs.spring.io/spring-boot/
+\bibitem{angular} Google, ``Angular Documentation,'' [Online]. Available: https://angular.dev
+\bibitem{jwt} M. Jones, J. Bradley, N. Sakimura, ``JSON Web Token (JWT),'' RFC~7519, IETF, May 2015.
+\bibitem{owasp} OWASP Foundation, ``OWASP Top Ten,'' [Online]. Available: https://owasp.org/www-project-top-ten/
+\bibitem{wcag} W3C, ``Web Content Accessibility Guidelines (WCAG) 2.1,'' [Online]. Available: https://www.w3.org/TR/WCAG21/
+\bibitem{worldaquatics} World Aquatics, Official Website, [Online]. Available: https://www.worldaquatics.com
+\bibitem{africaaquatics} Africa Aquatics, Official Website, [Online]. Available: https://africaaquatics.org
+\bibitem{liquibase} Liquibase Inc., ``Liquibase Documentation,'' [Online]. Available: https://docs.liquibase.com
+\bibitem{postgresql} PostgreSQL Global Development Group, ``PostgreSQL Documentation,'' [Online]. Available: https://www.postgresql.org/docs/
+\end{thebibliography}
+
+\end{document}

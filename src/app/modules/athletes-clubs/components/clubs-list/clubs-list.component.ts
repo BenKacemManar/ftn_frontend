@@ -57,16 +57,20 @@ import { PaginationComponent } from '../../../../shared/components/pagination/pa
 export class ClubsListComponent implements OnInit {
   readonly clubs = signal<any[]>([]);
   readonly loading = signal(false);
-  search = '';
-  page = 1; pageSize = 12;
+  readonly searchSig = signal('');
+  readonly pageSig = signal(1);
+  readonly pageSize = 12;
+
+  get search(): string { return this.searchSig(); }
+  get page(): number { return this.pageSig(); }
 
   readonly filtered = computed(() => {
-    const q = this.search.toLowerCase();
+    const q = this.searchSig().toLowerCase();
     return this.clubs().filter(c => !q || c.nom?.toLowerCase().includes(q));
   });
 
   readonly pageItems = computed(() => {
-    const start = (this.page - 1) * this.pageSize;
+    const start = (this.pageSig() - 1) * this.pageSize;
     return this.filtered().slice(start, start + this.pageSize);
   });
 
@@ -86,6 +90,6 @@ export class ClubsListComponent implements OnInit {
     });
   }
 
-  onSearchValue(v: string): void { this.search = v; this.page = 1; }
-  onPage(p: number): void { this.page = p; }
+  onSearchValue(v: string): void { this.searchSig.set(v); this.pageSig.set(1); }
+  onPage(p: number): void { this.pageSig.set(p); }
 }

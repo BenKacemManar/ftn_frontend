@@ -1,0 +1,207 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{hyperref}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{Athletix Governance~: Conception et Développement d'une Plateforme Numérique Fédérale pour la Fédération Tunisienne de Natation}
+
+\author{
+\IEEEauthorblockN{Alaa Ben Chouikha}
+\IEEEauthorblockA{Classe 1ALINFO1 \\ ESPRIT School of Engineering \\ Tunis, Tunisie \\ alaa.benchouikha@esprit.tn}
+\and
+\IEEEauthorblockN{Manar Ben Kacem}
+\IEEEauthorblockA{Classe 1ALINFO1 \\ ESPRIT School of Engineering \\ Tunis, Tunisie \\ manar.benkacem@esprit.tn}
+\and
+\IEEEauthorblockN{Elaa}
+\IEEEauthorblockA{Classe 1ALINFO1 \\ ESPRIT School of Engineering \\ Tunis, Tunisie \\ elaa@esprit.tn}
+\and
+\IEEEauthorblockN{Mazen Jebali}
+\IEEEauthorblockA{Classe 1ALINFO1 \\ ESPRIT School of Engineering \\ Tunis, Tunisie \\ mazen.jebali@esprit.tn}
+\and
+\IEEEauthorblockN{Montassar Tayari}
+\IEEEauthorblockA{Classe 1ALINFO1 \\ ESPRIT School of Engineering \\ Tunis, Tunisie \\ montassar.tayari@esprit.tn}
+}
+
+\maketitle
+
+\begin{abstract}
+La Fédération Tunisienne de Natation (FTN) régit l'ensemble des sports aquatiques en Tunisie (natation sportive, eau libre, natation synchronisée, plongeon, water-polo) et s'appuie aujourd'hui sur un site institutionnel statique, développé sous WordPress, qui ne propose aucune interaction utilisateur avancée. Cet article présente l'étude, la conception et le développement d'\emph{Athletix Governance}, une plateforme numérique fédérale destinée à remplacer ce site. À partir d'une analyse de l'existant et des besoins des quatre catégories d'acteurs identifiées (public, athlètes, coachs/clubs, administrateurs fédéraux), nous spécifions un ensemble de dix besoins fonctionnels et huit besoins non fonctionnels, puis nous proposons une architecture en huit modules : six modules cœur (authentification, compétitions, résultats et classements, clubs, contenu, programmes d'entraînement) et deux modules à valeur ajoutée (gestion des piscines affiliées avec réservation de créneaux et affectation de couloirs d'entraînement aux clubs, forum communautaire), ces deux derniers étant absents de tout site de fédération aquatique africaine recensé. La solution est implémentée avec une API REST Spring Boot, des migrations de schéma versionnées par Liquibase, une authentification par jetons JWT et un frontend Angular modulaire fondé sur les signaux réactifs. Les résultats montrent qu'une telle architecture permet de moderniser la gestion des compétitions, des licences et des résultats tout en restant maintenable et évolutive.
+\end{abstract}
+
+\begin{IEEEkeywords}
+plateforme numérique fédérale, gestion de compétitions sportives, Spring Boot, Angular, transformation digitale, fédération de natation, architecture REST
+\end{IEEEkeywords}
+
+\section{Introduction}
+La Fédération Tunisienne de Natation (FTN) est l'organisme officiel qui régit les sports aquatiques en Tunisie. Elle regroupe l'ensemble des clubs de natation sportive, de natation en eau libre, de natation synchronisée, de plongeon et de water-polo, organise les compétitions nationales et gère les équipes nationales. Elle est membre d'\emph{Africa Aquatics} et de \emph{World Aquatics}, et son siège se situe à la Maison des Fédérations Sportives, Cité Olympique El Menzah, Tunis.
+
+Malgré ce rôle central dans l'écosystème sportif national, la présence numérique de la FTN repose sur un site institutionnel (\texttt{ftnatation.tn}) conçu comme une simple vitrine de contenu : actualités, résultats, calendriers et documents officiels y sont publiés manuellement, sans aucun espace personnel pour les athlètes ou les clubs, ni aucune fonctionnalité transactionnelle (inscription en ligne, demande de licence dématérialisée). Cette situation crée un décalage croissant entre les attentes des usagers du sport digital moderne et l'offre numérique réelle de la fédération.
+
+L'objectif de ce travail est double~: (1) conduire une étude structurée de l'existant afin d'identifier précisément les limites du site actuel et les besoins des différents acteurs de la fédération, et (2) concevoir et développer une plateforme numérique fédérale, \emph{Athletix Governance}, qui réponde à ces besoins par une architecture modulaire moderne, sécurisée et évolutive. Le reste de cet article est organisé comme suit~: la section II présente l'étude de l'existant, la section III détaille les acteurs et les besoins fonctionnels et non fonctionnels, la section IV décrit l'architecture modulaire de la solution, la section V présente l'implémentation technique réalisée, la section VI discute la valeur ajoutée de la solution, et la section VII conclut et propose des perspectives.
+
+\section{Étude de l'Existant}
+\subsection{Analyse du site actuel}
+Le site \texttt{ftnatation.tn} est développé sous WordPress et organise son contenu en sept sections principales~: \emph{La Fédération Tunisienne} (règlements, organigramme, clubs affiliés, staff technique), \emph{Natation}, \emph{Eau Libre} et \emph{Water Polo} (résultats, classements, échéances, équipes nationales et calendrier national pour chaque discipline), \emph{Académie de Natation} (programme et actualités), \emph{Licences} (liste par club) et \emph{Coin Presse} (articles et communiqués). Cette structure répète les mêmes sous-sections pour chaque discipline sans offrir de vue consolidée.
+
+\subsection{Limites identifiées}
+L'analyse fait ressortir sept catégories de limites majeures.
+
+\begin{enumerate}
+\item \textbf{Interface vieillissante et non responsive} — thème WordPress obsolète, menus et tableaux illisibles sur mobile, aucune optimisation UX/UI depuis la création du site.
+\item \textbf{Contenu bilingue incohérent} — absence de sélecteur de langue, pages tantôt en arabe tantôt en français sans traduction systématique.
+\item \textbf{Absence de fonctionnalités interactives} — aucune inscription en ligne aux compétitions ni demande de licence dématérialisée~; toutes les démarches passent par téléphone ou déplacement physique.
+\item \textbf{Absence de gestion des compétitions en temps réel} — résultats publiés manuellement en PDF ou HTML, classements non mis à jour automatiquement, retards de publication de plusieurs jours.
+\item \textbf{Navigation peu intuitive} — menus imbriqués, sous-sections redondantes, absence de moteur de recherche interne.
+\item \textbf{Absence d'espace membre sécurisé} — aucun système d'authentification~: un athlète ne peut consulter son historique de performances, un club ne peut gérer ses licenciés en ligne.
+\item \textbf{Gestion rudimentaire des médias et absence d'API publique} — pas de galerie photo/vidéo, actualités non catégorisées, aucun accès programmatique aux données fédérales, isolant techniquement la fédération de son écosystème numérique.
+\end{enumerate}
+
+Le site actuel demeure donc un site institutionnel orienté contenu, sans interaction utilisateur avancée. Cette observation constitue le point de départ de la spécification de la solution cible présentée dans les sections suivantes.
+
+\section{Acteurs et Besoins}
+\subsection{Acteurs du système}
+Quatre catégories d'acteurs ont été identifiées, résumées au Tableau~\ref{tab:acteurs}.
+
+\begin{table}[h]
+\caption{Acteurs du système}
+\label{tab:acteurs}
+\centering
+\begin{tabular}{p{1.6cm}p{4.8cm}p{1.3cm}}
+\toprule
+\textbf{Acteur} & \textbf{Description} & \textbf{Accès} \\
+\midrule
+Public / Média & Visiteurs non authentifiés consultant résultats, actualités, calendrier & Public \\
+Athlète & Membre licencié gérant son profil, ses résultats et ses inscriptions & Authentifié \\
+Coach / Club & Responsable de la gestion des athlètes et des inscriptions du club & Authentifié \\
+Admin Fédération & Gestionnaire de la plateforme (contenu, licences, compétitions, utilisateurs) & Admin \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Besoins fonctionnels}
+Le Tableau~\ref{tab:bf} synthétise les dix besoins fonctionnels (BF) identifiés à partir de l'analyse des acteurs et des cas d'utilisation.
+
+\begin{table}[h]
+\caption{Besoins fonctionnels}
+\label{tab:bf}
+\centering
+\begin{tabular}{p{0.5cm}p{6cm}p{0.9cm}}
+\toprule
+\textbf{ID} & \textbf{Besoin fonctionnel} & \textbf{Prio.} \\
+\midrule
+BF-01 & Gestion des utilisateurs~: authentification sécurisée, rôles, droits d'accès & Haute \\
+BF-02 & Gestion des athlètes~: profils, historique de performances, classement & Haute \\
+BF-03 & Gestion des compétitions~: création, calendrier, publication de résultats & Haute \\
+BF-04 & Inscriptions et licences en ligne dématérialisées & Haute \\
+BF-05 & Calendrier des événements avec filtres multi-critères & Haute \\
+BF-06 & Moteur de recherche avancée (athlètes, compétitions, clubs) & Moyenne \\
+BF-07 & CMS pour les actualités et annonces fédérales & Moyenne \\
+BF-08 & Tableaux de bord et statistiques de performance & Moyenne \\
+BF-09 & Gestion des piscines affiliées, carte interactive, réservation & Haute \\
+BF-10 & Forum communautaire avec modération et espace Q\&A & Moyenne \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Besoins non fonctionnels}
+Huit exigences non fonctionnelles encadrent la conception~: \emph{performance} (chargement inférieur à 2~secondes pour les pages principales), \emph{sécurité} (authentification JWT, HTTPS, hachage BCrypt, conformité RGPD), \emph{responsive design} (adaptation mobile, tablette, desktop), \emph{accessibilité} (conformité WCAG~2.1 niveau AA), \emph{multilinguisme} (arabe RTL, français, anglais), \emph{scalabilité} (montée en charge lors des compétitions majeures), \emph{maintenabilité} (code modulaire, documenté, testé) et \emph{fiabilité} (disponibilité minimale de 99,5~\%).
+
+\section{Architecture de la Solution}
+La solution \emph{Athletix Governance} est découpée en huit modules fonctionnels indépendants, chacun couvrant un domaine métier complet de la couche backend à l'interface utilisateur. Les six premiers modules sont des modules \emph{cœur}, modernisant les fonctionnalités déjà présentes sur le site existant~; les deux derniers sont des modules à \emph{valeur ajoutée}, introduisant des services inexistants sur le site actuel et, à notre connaissance, sur tout autre site de fédération aquatique africaine.
+
+\subsection{Module 1 — Authentification et gestion des utilisateurs}
+Authentification sécurisée par JWT et gestion des rôles, modification du profil personnel, soumission et validation des demandes de licence, CRUD des utilisateurs avec attribution des droits d'accès.
+
+\subsection{Module 2 — Gestion des compétitions}
+Création de compétitions (discipline, dates, lieu, catégories), consultation du calendrier avec filtres (discipline, région, niveau), inscription individuelle avec validation automatique des critères, inscription groupée par les coachs, modification/annulation avec notification automatique.
+
+\subsection{Module 3 — Résultats et classements}
+Saisie et publication officielle des résultats après chaque compétition, consultation filtrée par type, catégorie, année, genre et discipline, historique personnel des performances, classement national par discipline et catégorie d'âge, tableau de bord des performances collectives du club.
+
+\subsection{Module 4 — Gestion des clubs}
+Fiches athlètes publiques (palmarès, club, discipline, nationalité), CRUD des membres du club avec suivi des licences et affectation aux compétitions, annuaire des clubs affiliés, indicateurs clés (licences actives, clubs et athlètes par région), affectation d'une piscine et d'un couloir d'entraînement à chaque club, visible sur sa fiche publique.
+
+\subsection{Module 5 — Contenu et backoffice}
+Articles d'actualité catégorisés avec pagination et recherche, CMS pour la publication d'annonces et de documents officiels, recherche globale unifiée (athlètes, compétitions, clubs, articles), galerie médias gérée par l'administrateur, tableau de bord public de statistiques agrégées (licences, clubs, athlètes) alimentant la page d'accueil.
+
+\subsection{Module 6 — Programmes d'entraînement}
+Ce module numérise la section \emph{Académie de Natation} du site existant~: catalogue des programmes d'entraînement par tranche d'âge (description, âge minimum/maximum, visuel, statut actif/inactif), CRUD complet côté administration, consultation publique des programmes actifs sur la page d'accueil pour orienter les familles vers le programme adapté à l'âge de l'enfant.
+
+\subsection{Module 7 — Gestion des piscines (valeur ajoutée)}
+Ce module centralise les infrastructures aquatiques affiliées et introduit un système de réservation de créneaux en ligne~: carte interactive géolocalisée, fiche détaillée par piscine (capacité, types de bassins 25~m/50~m, horaires, équipements), réservation de créneau d'entraînement, gestion des disponibilités et signalement d'indisponibilité par l'administrateur, filtrage multi-critères. Il constitue également la source des couloirs affectés aux clubs pour leurs entraînements (cf. Module 4).
+
+\subsection{Module 8 — Forum communautaire (valeur ajoutée)}
+Espace d'échange structuré par catégories (natation, water-polo, eau libre, entraînement), création et réponse aux discussions, interactions sociales (like, signalement), épinglage d'annonces officielles, modération par l'administrateur, et espace Q\&A dédié entre coachs et athlètes.
+
+Le Tableau~\ref{tab:modules} récapitule la répartition des cas d'utilisation par module.
+
+\begin{table}[h]
+\caption{Récapitulatif des modules}
+\label{tab:modules}
+\centering
+\begin{tabular}{p{0.9cm}p{3.3cm}p{1cm}p{1.6cm}}
+\toprule
+\textbf{Module} & \textbf{Nom} & \textbf{UC} & \textbf{Type} \\
+\midrule
+M1 & Authentification \& Utilisateurs & 5 & Cœur \\
+M2 & Gestion des compétitions & 5 & Cœur \\
+M3 & Résultats \& classements & 5 & Cœur \\
+M4 & Athlètes \& clubs & 4 & Cœur \\
+M5 & Contenu \& backoffice & 4 & Cœur \\
+M6 & Programmes d'entraînement & 4 & Cœur \\
+M7 & Gestion des piscines & 6 & Valeur ajoutée \\
+M8 & Forum communautaire & 7 & Valeur ajoutée \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Implémentation Technique}
+\subsection{Backend}
+Le backend expose une API REST développée avec \emph{Spring Boot}, organisée en couches \texttt{Controller}/\texttt{Service}/\texttt{Repository} par domaine métier (compétitions, épreuves, résultats, classements, événements, clubs, athlètes, actualités). La persistance s'appuie sur une base relationnelle dont le schéma est versionné par \emph{Liquibase}~: chaque évolution de schéma est décrite par un \emph{changeset} XML, et les changesets de création de table sont rendus idempotents via des \texttt{preConditions} (\texttt{onFail="MARK\_RAN"}) vérifiant l'absence préalable de la table ou de la colonne ciblée, ce qui permet de fusionner en toute sécurité des migrations issues de branches de développement parallèles sans risquer de conflit sur une base déjà initialisée. L'authentification repose sur des jetons JWT avec gestion de rôles (RBAC), conformément au besoin non fonctionnel de sécurité spécifié en section III-C.
+
+\subsection{Frontend}
+Le frontend est développé avec \emph{Angular}, en composants \emph{standalone} organisés en modules métier chargés à la demande (\emph{lazy loading}) pour chaque module fonctionnel (compétitions, résultats, athlètes/clubs, contenu, piscines, forum, administration). L'état réactif des composants est géré par l'API des \emph{signaux} (\texttt{signal}, \texttt{computed}) plutôt que par des flux observables classiques, simplifiant la gestion d'état local (filtres, pagination, recherche) et améliorant la lisibilité du code.
+
+\subsection{Déploiement}
+L'ensemble de la pile (API backend, base de données, frontend) est conteneurisé et orchestré via \emph{Docker Compose}, permettant un déploiement reproductible sur tout environnement disposant du moteur Docker.
+
+\section{Discussion}
+Les modules 7 (gestion des piscines) et 8 (forum communautaire) constituent la principale valeur ajoutée de cette plateforme par rapport au site existant. À notre connaissance, aucune fédération aquatique africaine ne propose actuellement de système de réservation de créneaux de piscine en ligne~: ce module réduit les démarches informelles par téléphone, optimise l'utilisation des infrastructures sportives nationales et constitue un différenciateur réel pour la FTN dans son écosystème régional. De même, le forum communautaire centralise des échanges aujourd'hui dispersés sur des réseaux sociaux non officiels (WhatsApp, Facebook), tout en valorisant l'expertise des coachs via un espace Q\&A dédié, et en donnant à la fédération un canal de communication officiel modéré.
+
+Sur le plan technique, le choix d'une architecture modulaire avec migrations idempotentes facilite l'intégration continue de modules développés en parallèle par des équipes distinctes — une contrainte concrète rencontrée lors du développement, où plusieurs branches de fonctionnalités (compétitions, actualités) ont dû être fusionnées sur la branche d'intégration sans régression du schéma de base de données.
+
+\section{Conclusion et Perspectives}
+Cet article a présenté l'étude de l'existant, la spécification des besoins et l'architecture de la plateforme numérique fédérale \emph{Athletix Governance}, conçue pour remplacer le site institutionnel actuel de la Fédération Tunisienne de Natation. L'analyse a mis en évidence un site limité, sans interaction ni espace personnel pour les acteurs~; la solution proposée répond à ces limites par six modules cœur qui modernisent les fonctionnalités existantes et deux modules à valeur ajoutée (piscines, forum) qui positionnent la plateforme comme pionnière dans l'écosystème des fédérations sportives africaines. L'implémentation technique réalisée — API REST Spring Boot, migrations Liquibase idempotentes, authentification JWT, frontend Angular réactif — démontre la viabilité de cette architecture.
+
+Les perspectives de ce travail incluent l'internationalisation complète de l'interface (arabe RTL, français, anglais), le déploiement d'une application mobile complémentaire, et la mise en place de notifications temps réel (résultats, validation de licence, disponibilité de créneaux de piscine) via WebSocket.
+
+\section*{Remerciements}
+Les auteurs remercient l'ESPRIT School of Engineering ainsi que la Fédération Tunisienne de Natation pour le contexte métier ayant permis la réalisation de ce projet académique.
+
+\begin{thebibliography}{00}
+\bibitem{springboot} VMware/Spring Team, ``Spring Boot Reference Documentation,'' [Online]. Available: https://docs.spring.io/spring-boot/
+\bibitem{angular} Google, ``Angular Documentation,'' [Online]. Available: https://angular.dev
+\bibitem{jwt} M. Jones, J. Bradley, N. Sakimura, ``JSON Web Token (JWT),'' RFC~7519, IETF, May 2015.
+\bibitem{owasp} OWASP Foundation, ``OWASP Top Ten,'' [Online]. Available: https://owasp.org/www-project-top-ten/
+\bibitem{wcag} W3C, ``Web Content Accessibility Guidelines (WCAG) 2.1,'' [Online]. Available: https://www.w3.org/TR/WCAG21/
+\bibitem{worldaquatics} World Aquatics, Official Website, [Online]. Available: https://www.worldaquatics.com
+\bibitem{africaaquatics} Africa Aquatics, Official Website, [Online]. Available: https://africaaquatics.org
+\bibitem{liquibase} Liquibase Inc., ``Liquibase Documentation,'' [Online]. Available: https://docs.liquibase.com
+\bibitem{postgresql} PostgreSQL Global Development Group, ``PostgreSQL Documentation,'' [Online]. Available: https://www.postgresql.org/docs/
+\end{thebibliography}
+
+\end{document}

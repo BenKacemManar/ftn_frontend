@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, computed } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-pagination',
@@ -38,9 +38,9 @@ export class PaginationComponent {
 
   onPage(p: number): void { this.pageChange.emit(p); }
 
-  totalPages = computed(() => Math.ceil(this.total / this.pageSize));
+  totalPages(): number { return Math.ceil(this.total / this.pageSize); }
 
-  pages = computed((): (number | string)[] => {
+  pages(): (number | string)[] {
     const tp = this.totalPages();
     const cur = this.page;
     const result: (number | string)[] = [];
@@ -52,5 +52,5 @@ export class PaginationComponent {
       }
     }
     return result;
-  });
+  }
 }

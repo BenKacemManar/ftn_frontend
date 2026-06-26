@@ -57,7 +57,7 @@ const PILL_OFF     = 'px-4 py-2 rounded-full text-sm transition-colors border bo
             </div>
 
             <!-- Stat cards -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div class="bg-white/[0.03] border border-white/10 rounded-lg p-4">
                 <div class="text-2xl font-serif text-gold mb-1">{{ athletes().length }}</div>
                 <div class="text-xs text-white/50">Athlètes</div>
@@ -73,6 +73,14 @@ const PILL_OFF     = 'px-4 py-2 rounded-full text-sm transition-colors border bo
               <div class="bg-white/[0.03] border border-white/10 rounded-lg p-4">
                 <div class="text-sm font-medium mb-1">{{ fmtDate(club().dateAffiliation) }}</div>
                 <div class="text-xs text-white/50">Affiliation</div>
+              </div>
+              <div class="bg-white/[0.03] border border-white/10 rounded-lg p-4">
+                @if (club().poolNom) {
+                  <div class="text-sm font-medium mb-1">{{ club().poolNom }}{{ club().lane ? ' · Couloir ' + club().lane : '' }}</div>
+                } @else {
+                  <div class="text-sm font-medium mb-1 text-white/30">Non assignée</div>
+                }
+                <div class="text-xs text-white/50">Piscine d'entraînement</div>
               </div>
             </div>
           </div>

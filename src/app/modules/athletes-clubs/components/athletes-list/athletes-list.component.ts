@@ -65,20 +65,30 @@ const GENDERS = [{ v:'',l:'Tous' },{ v:'MASCULIN',l:'Hommes' },{ v:'FEMININ',l:'
 export class AthletesListComponent implements OnInit {
   readonly all = signal<any[]>([]);
   readonly loading = signal(false);
-  search = ''; category = ''; gender = ''; page = 1;
+  readonly searchSig = signal('');
+  readonly categorySig = signal('');
+  readonly genderSig = signal('');
+  readonly pageSig = signal(1);
   readonly CATS = CATS; readonly GENDERS = GENDERS;
 
+  get search(): string { return this.searchSig(); }
+  get category(): string { return this.categorySig(); }
+  get gender(): string { return this.genderSig(); }
+  get page(): number { return this.pageSig(); }
+
   readonly filtered = computed(() => {
-    const q = this.search.toLowerCase();
+    const q = this.searchSig().toLowerCase();
+    const cat = this.categorySig();
+    const gen = this.genderSig();
     return this.all().filter(a =>
       (!q || `${a.prenom} ${a.nom}`.toLowerCase().includes(q)) &&
-      (!this.category || a.categorie === this.category) &&
-      (!this.gender || a.sexe === this.gender)
+      (!cat || a.categorie === cat) &&
+      (!gen || a.sexe === gen)
     );
   });
 
   readonly page_items = computed(() => {
-    const start = (this.page - 1) * 12;
+    const start = (this.pageSig() - 1) * 12;
     return this.filtered().slice(start, start + 12);
   });
 
@@ -98,14 +108,14 @@ export class AthletesListComponent implements OnInit {
     ];
   }
 
-  onSearchValue(v: string): void { this.search = v; this.page = 1; }
+  onSearchValue(v: string): void { this.searchSig.set(v); this.pageSig.set(1); }
 
   onFilterGroupChange(e: { index: number; value: string }): void {
-    if (e.index === 0) this.category = e.value;
-    else this.gender = e.value;
-    this.page = 1;
+    if (e.index === 0) this.categorySig.set(e.value);
+    else this.genderSig.set(e.value);
+    this.pageSig.set(1);
   }
 
-  onPage(p: number): void { this.page = p; }
+  onPage(p: number): void { this.pageSig.set(p); }
   initials(a: any): string { return `${(a.prenom||'')[0]??''}${(a.nom||'')[0]??''}`.toUpperCase(); }
 }
