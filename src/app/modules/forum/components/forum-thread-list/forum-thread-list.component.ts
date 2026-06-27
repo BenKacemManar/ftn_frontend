@@ -41,7 +41,13 @@ import { Eye, MessageCircle } from 'lucide-angular';
                 <textarea [(ngModel)]="newContent" name="content" rows="5" required
                   class="block w-full bg-transparent border border-white/20 focus:border-white rounded-lg px-4 py-3 outline-none resize-none transition-colors"></textarea>
               </div>
-              <div class="flex gap-4">
+              <div>
+                <span class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">URL d'image (optionnel)</span>
+                <input [(ngModel)]="newImageUrl" name="imageUrl"
+                  class="block w-full bg-transparent border-b border-white/20 focus:border-white pb-3 outline-none transition-colors"/>
+              </div>
+              <div class="flex gap-4 items-center">
+                <app-emoji-picker (picked)="newContent = newContent + $event"></app-emoji-picker>
                 <button type="submit" [disabled]="creating()"
                   class="px-6 py-3 rounded-full bg-white text-black hover:bg-accent hover:text-white transition-colors text-sm disabled:opacity-50">
                   {{ creating() ? '…' : 'Créer' }}
@@ -62,7 +68,7 @@ import { Eye, MessageCircle } from 'lucide-angular';
             @for (t of threads(); track t.id) {
               <div class="group grid grid-cols-12 items-center py-5 border-b border-white/10 hover:bg-white/[0.02] px-2 transition-colors">
                 <div class="col-span-9 lg:col-span-7">
-                  <a [routerLink]="['/forum/thread', t.id]"
+                  <a [routerLink]="['/forum', forumId, t.id]"
                     class="font-serif text-lg hover:underline decoration-accent">{{ t.titre }}</a>
                   <div class="text-xs text-white/40 mt-1">{{ t.auteurPrenom }} {{ t.auteurNom }} · {{ fmtDate(t.dateCreation) }}</div>
                 </div>
@@ -71,7 +77,7 @@ import { Eye, MessageCircle } from 'lucide-angular';
                   <span class="inline-flex items-center gap-1"><lucide-icon [img]="MessageCircle" class="w-3.5 h-3.5"></lucide-icon> {{ t.nbReponses }}</span>
                 </div>
                 <div class="col-span-3 lg:col-span-2 flex justify-end">
-                  <a [routerLink]="['/forum/thread', t.id]"
+                  <a [routerLink]="['/forum', forumId, t.id]"
                     class="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-accent group-hover:border-accent transition-colors text-sm">→</a>
                 </div>
               </div>
@@ -88,7 +94,7 @@ export class ForumThreadListComponent implements OnInit {
   readonly loading = signal(true);
   readonly showForm = signal(false);
   readonly creating = signal(false);
-  newTitle = ''; newContent = '';
+  newTitle = ''; newContent = ''; newImageUrl = '';
   forumId = '';
   readonly Eye = Eye;
   readonly MessageCircle = MessageCircle;
@@ -96,7 +102,7 @@ export class ForumThreadListComponent implements OnInit {
   constructor(private api: ApiService, private route: ActivatedRoute, readonly auth: AuthService) {}
 
   ngOnInit(): void {
-    this.forumId = this.route.snapshot.paramMap.get('id') ?? '';
+    this.forumId = this.route.snapshot.paramMap.get('categoryId') ?? '';
     forkJoin([
       this.api.get<any>(`/forums/${this.forumId}`),
       this.api.get<any>(`/sujets/forum/${this.forumId}`)
@@ -118,12 +124,13 @@ export class ForumThreadListComponent implements OnInit {
       forumId: Number(this.forumId),
       auteurId: uid ? Number(uid) : undefined,
       titre: this.newTitle,
-      contenu: this.newContent
+      contenu: this.newContent,
+      imageUrl: this.newImageUrl || undefined
     }).subscribe({
       next: t => {
         this.threads.update(ts => [t?.data ?? t, ...ts]);
         this.showForm.set(false);
-        this.newTitle = ''; this.newContent = '';
+        this.newTitle = ''; this.newContent = ''; this.newImageUrl = '';
         this.creating.set(false);
       },
       error: () => this.creating.set(false)

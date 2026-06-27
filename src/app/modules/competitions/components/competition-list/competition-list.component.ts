@@ -28,10 +28,10 @@ const F2B: Record<string,string> = { upcoming:'PLANIFIEE',ongoing:'EN_COURS',fin
             </h1>
           </div>
           @if (auth.hasRole('ADMIN') || auth.hasRole('COACH')) {
-            <a routerLink="/competitions/new"
+            <button (click)="formOpen.set(true)"
               class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent text-white hover:bg-white hover:text-black transition-colors text-sm">
               + Nouvelle compétition
-            </a>
+            </button>
           }
         </div>
 
@@ -76,11 +76,16 @@ const F2B: Record<string,string> = { upcoming:'PLANIFIEE',ongoing:'EN_COURS',fin
         <app-pagination [page]="page" [total]="total" [pageSize]="pageSize" (pageChange)="onPage($event)" />
       </section>
     </app-page-layout>
+
+    <app-modal [open]="formOpen()" title="Nouvelle compétition" (closed)="formOpen.set(false)">
+      <app-competition-form [id]="null" (saved)="onFormSaved()"></app-competition-form>
+    </app-modal>
   `
 })
 export class CompetitionListComponent implements OnInit {
   readonly competitions = signal<any[]>([]);
   readonly loading = signal(false);
+  readonly formOpen = signal(false);
   total = 0; page = 1; pageSize = 10;
   statusFilter = ''; typeFilter = '';
 
@@ -128,6 +133,8 @@ export class CompetitionListComponent implements OnInit {
   }
 
   onPage(p: number): void { this.page = p; this.load(); }
+
+  onFormSaved(): void { this.formOpen.set(false); this.load(); }
 
   fmtDate(d?: string): string {
     if (!d) return '—';

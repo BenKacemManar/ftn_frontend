@@ -15,32 +15,6 @@ import { Pencil, Trash2 } from 'lucide-angular';
           <h1 class="font-serif text-3xl">Forum</h1>
           <button (click)="openCreate()" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent text-white text-sm hover:bg-white hover:text-black transition-colors">+ Catégorie</button>
         </div>
-        @if (showForm()) {
-          <form (ngSubmit)="save()" class="mb-8 p-6 border border-white/10 rounded-lg max-w-lg">
-            <h3 class="font-serif text-xl mb-6">{{ editingCat() ? 'Modifier' : 'Nouvelle' }} catégorie</h3>
-            <div class="space-y-6">
-              <div>
-                <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Nom *</label>
-                <input [(ngModel)]="form.nom" name="nom" required class="block w-full bg-transparent border-b border-white/20 focus:border-white pb-3 outline-none transition-colors"/>
-              </div>
-              <div>
-                <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Description</label>
-                <input [(ngModel)]="form.description" name="desc" class="block w-full bg-transparent border-b border-white/20 focus:border-white pb-3 outline-none transition-colors"/>
-              </div>
-              <div>
-                <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Catégorie</label>
-                <select [(ngModel)]="form.categorie" name="cat" class="block w-full bg-transparent border-b border-white/20 pb-3 outline-none text-white">
-                  <option value="" class="bg-[#1a0000]">Non spécifié</option>
-                  @for (c of CATS; track c) { <option [value]="c" class="bg-[#1a0000]">{{ c.replace('_','-').toLowerCase() }}</option> }
-                </select>
-              </div>
-              <div class="flex gap-4">
-                <button type="submit" [disabled]="saving()" class="px-6 py-2.5 rounded-full bg-white text-black hover:bg-accent hover:text-white transition-colors text-sm disabled:opacity-50">{{ saving() ? '…' : (editingCat() ? 'Mettre à jour' : 'Créer') }}</button>
-                <button type="button" (click)="showForm.set(false)" class="px-6 py-2.5 rounded-full border border-white/20 text-sm">Annuler</button>
-              </div>
-            </div>
-          </form>
-        }
         @if (loading()) { <div class="text-white/40 text-center py-16">Chargement…</div> }
         @else {
           <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -71,6 +45,32 @@ import { Pencil, Trash2 } from 'lucide-angular';
         <button (click)="doDelete()" [disabled]="deleting()" class="flex-1 py-3 rounded-full bg-accent text-white text-sm disabled:opacity-50">Supprimer</button>
         <button (click)="deleteId.set(null)" class="flex-1 py-3 rounded-full border border-white/20 text-sm">Annuler</button>
       </div>
+    </app-modal>
+
+    <app-modal [open]="showForm()" [title]="(editingCat() ? 'Modifier' : 'Nouvelle') + ' catégorie'" (closed)="showForm.set(false)">
+      <form (ngSubmit)="save()">
+        <div class="space-y-6">
+          <div>
+            <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Nom *</label>
+            <input [(ngModel)]="form.nom" name="nom" required class="block w-full bg-transparent border-b border-white/20 focus:border-white pb-3 outline-none transition-colors"/>
+          </div>
+          <div>
+            <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Description</label>
+            <input [(ngModel)]="form.description" name="desc" class="block w-full bg-transparent border-b border-white/20 focus:border-white pb-3 outline-none transition-colors"/>
+          </div>
+          <div>
+            <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Catégorie</label>
+            <select [(ngModel)]="form.categorie" name="cat" class="block w-full bg-transparent border-b border-white/20 pb-3 outline-none text-white">
+              <option value="" class="bg-[#1a0000]">Non spécifié</option>
+              @for (c of CATS; track c) { <option [value]="c" class="bg-[#1a0000]">{{ c.replace('_','-').toLowerCase() }}</option> }
+            </select>
+          </div>
+          <div class="flex gap-4">
+            <button type="submit" [disabled]="saving()" class="px-6 py-2.5 rounded-full bg-white text-black hover:bg-accent hover:text-white transition-colors text-sm disabled:opacity-50">{{ saving() ? '…' : (editingCat() ? 'Mettre à jour' : 'Créer') }}</button>
+            <button type="button" (click)="showForm.set(false)" class="px-6 py-2.5 rounded-full border border-white/20 text-sm">Annuler</button>
+          </div>
+        </div>
+      </form>
     </app-modal>
   `
 })

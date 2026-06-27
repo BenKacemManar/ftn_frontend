@@ -11,6 +11,7 @@ import { StatusBadgeComponent } from './components/status-badge/status-badge.com
 import { PageLayoutComponent } from './components/page-layout/page-layout.component';
 import { FilterBarComponent } from './components/filter-bar/filter-bar.component';
 import { ModalComponent } from './components/modal/modal.component';
+import { EmojiPickerComponent } from './components/emoji-picker/emoji-picker.component';
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import { ModalComponent } from './components/modal/modal.component';
     PageLayoutComponent,
     FilterBarComponent,
     ModalComponent,
+    EmojiPickerComponent,
   ],
   imports: [CommonModule, RouterModule, FormsModule, LucideAngularModule],
   exports: [
@@ -31,6 +33,7 @@ import { ModalComponent } from './components/modal/modal.component';
     PageLayoutComponent,
     FilterBarComponent,
     ModalComponent,
+    EmojiPickerComponent,
     CommonModule,
     RouterModule,
     FormsModule,

@@ -38,7 +38,7 @@ import { Trash2 } from 'lucide-angular';
           <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Type</label>
           <select [(ngModel)]="form.type" name="type" class="block w-full bg-transparent border-b border-white/20 pb-3 outline-none text-white">
             <option value="" class="bg-[#1a0000]">Non spécifié</option>
-            @for (t of TYPES; track t) { <option [value]="t" class="bg-[#1a0000]">{{ t.charAt(0)+t.slice(1).toLowerCase() }}</option> }
+            @for (t of TYPES; track t.v) { <option [value]="t.v" class="bg-[#1a0000]">{{ t.l }}</option> }
           </select>
         </div>
         <div class="flex items-center gap-3">
@@ -96,7 +96,7 @@ export class PoolFormComponent implements OnChanges {
   readonly schedules = signal<any[]>([]);
   form = { nom:'', ville:'', adresse:'', longueur:25, nbCouloirs:8, type:'', actif:true };
   ns = { purpose:'', startDateTime:'', endDateTime:'' };
-  readonly TYPES = ['INTERIEUR','EXTERIEUR','OLYMPIQUE'];
+  readonly TYPES = [{ v:'INDOOR', l:'Intérieur' }, { v:'OUTDOOR', l:'Extérieur' }];
 
   constructor(private api: ApiService) {}
 

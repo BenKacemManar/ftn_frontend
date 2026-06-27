@@ -33,10 +33,10 @@ const S2F: Record<string,string> = { PLANIFIEE:'upcoming',EN_COURS:'ongoing',TER
               <div class="mt-4 text-white/50">{{ fmtDate(comp().startDate) }} — {{ fmtDate(comp().endDate) }}</div>
             </div>
             @if (auth.hasRole('ADMIN') || auth.hasRole('COACH')) {
-              <a [routerLink]="['/competitions', id, 'edit']"
+              <button (click)="formOpen.set(true)"
                 class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/20 hover:border-white text-sm transition-colors">
                 <lucide-icon [img]="Pencil" class="w-4 h-4"></lucide-icon> Modifier
-              </a>
+              </button>
             }
           </div>
 
@@ -77,6 +77,10 @@ const S2F: Record<string,string> = { PLANIFIEE:'upcoming',EN_COURS:'ongoing',TER
         }
       </section>
     </app-page-layout>
+
+    <app-modal [open]="formOpen()" title="Modifier la compétition" (closed)="formOpen.set(false)">
+      <app-competition-form [id]="id" (saved)="onFormSaved()"></app-competition-form>
+    </app-modal>
   `
 })
 export class CompetitionDetailComponent implements OnInit {
@@ -88,6 +92,7 @@ export class CompetitionDetailComponent implements OnInit {
   readonly comp = signal<any>(null);
   readonly events = signal<any[]>([]);
   readonly loading = signal(true);
+  readonly formOpen = signal(false);
   id = '';
   readonly S2F = S2F;
 
@@ -95,6 +100,10 @@ export class CompetitionDetailComponent implements OnInit {
 
   ngOnInit(): void {
     this.id = this.route.snapshot.paramMap.get('id') ?? '';
+    this.load();
+  }
+
+  load(): void {
     forkJoin([
       this.api.get<any>(`/competitions/${this.id}`),
       this.api.get<any[]>(`/events/competition/${this.id}`)
@@ -108,6 +117,8 @@ export class CompetitionDetailComponent implements OnInit {
       error: () => this.loading.set(false)
     });
   }
+
+  onFormSaved(): void { this.formOpen.set(false); this.load(); }
 
   infos() {
     const c = this.comp();
