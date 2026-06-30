@@ -151,4 +151,9 @@ export class NavComponent {
     this.menuOpen.set(false);
     this.auth.logout();
   }
+  visibleRouteLinks(): typeof ROUTE_LINKS {
+  return this.auth.hasRole('ADMIN')
+    ? this.routeLinks.filter(item => item.to !== '/reservations')
+    : this.routeLinks;
+}
 }
