@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import {
   LayoutDashboard, User, Building2, Trophy, ListOrdered, Droplet,
-  Newspaper, CreditCard, MessageCircle, Users, GraduationCap, Award, ArrowLeft,
+  Newspaper, CreditCard, MessageCircle, Users, GraduationCap, Award, ArrowLeft, CalendarCheck
 } from 'lucide-angular';
 import { AuthService } from '../../../../core/services/auth.service';
 
@@ -12,6 +12,7 @@ const LINKS = [
   { label: 'Compétitions',    to: '/competitions',    icon: Trophy },
   { label: 'Résultats',       to: '/results',         icon: ListOrdered },
   { label: 'Piscines',        to: '/admin/pools',     icon: Droplet },
+  { label: 'Réservations', to: '/admin/reservations', icon: CalendarCheck },
   { label: 'Programmes',      to: '/admin/programs',  icon: GraduationCap },
   { label: 'Classements',     to: '/admin/classements', icon: Award },
   { label: 'Actualités',      to: '/admin/news',      icon: Newspaper },

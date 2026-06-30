@@ -16,6 +16,18 @@ export class ReservationService {
     return this.api.get<Reservation[]>(`/reservations/user/${email}`);
   }
 
+  getAll(params: Record<string, any> = {}): Observable<any> {
+    return this.api.get<any>('/reservations', params);
+  }
+
+  approve(id: number): Observable<{ data: Reservation }> {
+    return this.api.put<{ data: Reservation }>(`/reservations/${id}/approve`, {});
+  }
+
+  deny(id: number): Observable<{ data: Reservation }> {
+    return this.api.put<{ data: Reservation }>(`/reservations/${id}/deny`, {});
+  }
+
   create(dto: CreateReservationDto): Observable<{ data: Reservation }> {
     return this.api.post<{ data: Reservation }>('/reservations', dto);
   }

@@ -1,5 +1,6 @@
 ﻿import { Component, OnInit } from '@angular/core';
 import { ReservationService } from '../../services/reservation.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { Reservation } from '../../../../core/models/reservation.model';
 
 @Component({
@@ -12,10 +13,23 @@ export class ReservationListComponent implements OnInit {
   loading = true;
   error = '';
 
-  constructor(private reservationService: ReservationService) {}
+  constructor(
+    private reservationService: ReservationService,
+    private authService: AuthService
+  ) {}
+
+  get isAdmin(): boolean {
+    return this.authService.hasRole('ADMIN');
+  }
 
   ngOnInit(): void {
-    this.reservationService.getByUser('admin@ftn.tn').subscribe({
+    const user = this.authService.currentUser;
+    if (!user) {
+      this.error = 'Vous devez être connecté.';
+      this.loading = false;
+      return;
+    }
+    this.reservationService.getByUser(user.email).subscribe({
       next: (res) => { this.reservations = res; this.loading = false; },
       error: () => { this.error = 'Erreur lors du chargement.'; this.loading = false; }
     });

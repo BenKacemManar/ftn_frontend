@@ -20,11 +20,12 @@ import { ClubStaffAdminComponent } from './components/club-staff-admin/club-staf
 import { ProgramsAdminComponent } from './components/programs-admin/programs-admin.component';
 import { ProgramFormComponent } from './components/program-form/program-form.component';
 import { ClassementsAdminComponent } from './components/classements-admin/classements-admin.component';
-
+import { ReservationsAdminComponent } from './components/reservations-admin/reservations-admin.component';
 @NgModule({
   declarations: [
     AdminLayoutComponent,
     DashboardComponent,
+    ReservationsAdminComponent,
     AthletesAdminComponent,
     AthleteFormComponent,
     ClubsAdminComponent,
@@ -40,7 +41,7 @@ import { ClassementsAdminComponent } from './components/classements-admin/classe
     ClubStaffAdminComponent,
     ProgramsAdminComponent,
     ProgramFormComponent,
-    ClassementsAdminComponent,
+    ClassementsAdminComponent
   ],
   imports: [SharedModule, AdminRoutingModule],
 })

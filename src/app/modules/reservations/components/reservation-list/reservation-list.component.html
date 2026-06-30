@@ -4,7 +4,7 @@
       <p class="page-eyebrow">Tableau de bord</p>
       <h1>Mes Réservations</h1>
     </div>
-    <a routerLink="/reservations/new" class="btn-new">
+    <a *ngIf="!isAdmin" routerLink="/reservations/new" class="btn-new">
       <span>+</span> Nouvelle réservation
     </a>
   </div>
@@ -79,7 +79,7 @@
         </div>
       </div>
 
-      <div class="card-footer" *ngIf="r.statut !== 'ANNULEE'">
+      <div class="card-footer" *ngIf="r.statut !== 'ANNULEE' && !isAdmin">
         <button class="btn-cancel" (click)="cancel(r.id)">
           Annuler la réservation
         </button>
