@@ -2,7 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { Observable, Subscription, interval, startWith, switchMap, catchError, of } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { Reservation, CreateReservationDto } from '../../../core/models/reservation.model';
+import { Reservation, CreateReservationDto , CreateRecurringReservationDto } from '../../../core/models/reservation.model';
 
 @Injectable({ providedIn: 'root' })
 export class ReservationService {
@@ -40,6 +40,9 @@ export class ReservationService {
   getAll(params: Record<string, any> = {}): Observable<any> {
     return this.api.get<any>('/reservations', params);
   }
+  createRecurring(dto: CreateRecurringReservationDto): Observable<Reservation[]> {
+  return this.api.post<Reservation[]>('/reservations/recurring', dto);
+}
 
   approve(id: number, lanes: number[]): Observable<{ data: Reservation }> {
     return this.api.put<{ data: Reservation }>(`/reservations/${id}/approve`, { lanes });

@@ -33,3 +33,15 @@ export interface CreateReservationDto {
   nomClub?: string;
   notes?: string;
 }
+
+export interface CreateRecurringReservationDto {
+  poolId: number;
+  startDate: string;
+  heureDebut: string;
+  heureFin: string;
+  typeReservation: TypeReservation;
+  nbCouloirs: number;
+  occurrences: number;
+  nomClub?: string;
+  notes?: string;
+}

@@ -2,8 +2,7 @@
 import { Router } from '@angular/router';
 import { ApiService } from '../../../../core/services/api.service';
 import { ReservationService } from '../../services/reservation.service';
-import { CreateReservationDto, TypeReservation } from '../../../../core/models/reservation.model';
-
+import { CreateReservationDto, CreateRecurringReservationDto, TypeReservation } from '../../../../core/models/reservation.model';
 @Component({
   selector: 'app-reservation-form',
   template: `
@@ -12,7 +11,7 @@ import { CreateReservationDto, TypeReservation } from '../../../../core/models/r
 
         @if (success) {
           <div class="mb-6 px-4 py-3 rounded-lg border border-green-500/40 text-green-400 text-sm" style="background:rgba(0,180,0,0.08)">
-            Réservation créée avec succès. Redirection...
+            {{ isRecurring ? 'Série de réservations créée avec succès.' : 'Réservation créée avec succès.' }} Redirection...
           </div>
         }
         @if (error) {
@@ -37,6 +36,20 @@ import { CreateReservationDto, TypeReservation } from '../../../../core/models/r
             </div>
           </div>
 
+          <div class="col-span-2">
+            <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Fréquence *</label>
+            <div class="flex gap-3">
+              <button type="button"
+                class="flex-1 py-2.5 rounded-full text-sm transition-colors"
+                [class]="!isRecurring ? 'bg-white text-black' : 'border border-white/20 text-white/70 hover:border-white/40'"
+                (click)="isRecurring = false">Une fois</button>
+              <button type="button"
+                class="flex-1 py-2.5 rounded-full text-sm transition-colors"
+                [class]="isRecurring ? 'bg-white text-black' : 'border border-white/20 text-white/70 hover:border-white/40'"
+                (click)="isRecurring = true">Toutes les semaines</button>
+            </div>
+          </div>
+
          <div class="col-span-2">
   <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Piscine *</label>
   <select [(ngModel)]="form.pool_id" name="pool" (ngModelChange)="onPoolChange()"
@@ -54,8 +67,15 @@ import { CreateReservationDto, TypeReservation } from '../../../../core/models/r
 </div>
 
 <div>
-  <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Date *</label>
+  <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">{{ isRecurring ? 'Date du premier créneau *' : 'Date *' }}</label>
   <input type="date" [(ngModel)]="form.date" name="date" [min]="today" style="color-scheme: dark;"
+    class="block w-full bg-transparent border-b border-white/20 focus:border-white pb-3 outline-none transition-colors"/>
+  <span class="block text-xs text-white/40 mt-2" *ngIf="isRecurring">Le jour de la semaine de cette date se répètera chaque semaine.</span>
+</div>
+
+<div *ngIf="isRecurring">
+  <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Nombre de semaines *</label>
+  <input type="number" [(ngModel)]="occurrences" name="occurrences" min="2" max="52" style="color-scheme: dark;"
     class="block w-full bg-transparent border-b border-white/20 focus:border-white pb-3 outline-none transition-colors"/>
 </div>
 
@@ -104,6 +124,9 @@ export class ReservationFormComponent implements OnInit {
   today = new Date().toISOString().split('T')[0];
 
   reservationType: TypeReservation = 'ATHLETE';
+
+  isRecurring = false;
+  occurrences = 8;
 
   form: any = {
     pool_id: 0,
@@ -174,10 +197,22 @@ export class ReservationFormComponent implements OnInit {
       this.error = 'Veuillez indiquer le nombre de couloirs souhaité.';
       return;
     }
+    if (this.isRecurring && (!this.occurrences || this.occurrences < 2 || this.occurrences > 52)) {
+      this.error = 'Le nombre de semaines doit être entre 2 et 52.';
+      return;
+    }
 
     this.loading = true;
     this.error = '';
 
+    if (this.isRecurring) {
+      this.submitRecurring();
+    } else {
+      this.submitOnce();
+    }
+  }
+
+  private submitOnce(): void {
     const dto: CreateReservationDto = {
       poolId: Number(this.form.pool_id),
       date: this.form.date,
@@ -191,6 +226,31 @@ export class ReservationFormComponent implements OnInit {
     };
 
     this.reservationService.create(dto).subscribe({
+      next: () => {
+        this.success = true;
+        setTimeout(() => this.router.navigate(['/reservations']), 1500);
+      },
+      error: (err) => {
+        this.error = err.error?.message || 'Une erreur est survenue.';
+        this.loading = false;
+      }
+    });
+  }
+
+  private submitRecurring(): void {
+    const dto: CreateRecurringReservationDto = {
+      poolId: Number(this.form.pool_id),
+      startDate: this.form.date,
+      heureDebut: this.form.heure_debut,
+      heureFin: this.form.heure_fin,
+      typeReservation: this.reservationType,
+      nbCouloirs: this.form.nbCouloirs,
+      occurrences: Number(this.occurrences),
+      nomClub: this.form.nom_club,
+      notes: this.form.notes
+    };
+
+    this.reservationService.createRecurring(dto).subscribe({
       next: () => {
         this.success = true;
         setTimeout(() => this.router.navigate(['/reservations']), 1500);
