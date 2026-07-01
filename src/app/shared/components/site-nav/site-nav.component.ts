@@ -1,6 +1,7 @@
 import { Component, HostListener, signal } from '@angular/core';
 import { LayoutDashboard, Menu, X } from 'lucide-angular';
 import { AuthService } from '../../../core/services/auth.service';
+import { ReservationService } from '../../../modules/reservations/services/reservation.service';
 
 @Component({
   selector: 'app-site-nav',
@@ -27,6 +28,9 @@ import { AuthService } from '../../../core/services/auth.service';
               [routerLinkActiveOptions]="{ exact: n.to === '/' }"
               class="relative px-4 py-2 text-sm text-white/70 hover:text-white transition-colors group">
               {{ n.label }}
+              @if (n.to === '/reservations' && reservationService.unseenCount() > 0) {
+                <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-accent"></span>
+              }
               <span class="absolute left-4 right-4 -bottom-0.5 h-px bg-accent scale-x-0 origin-left transition-transform group-hover:scale-x-100"></span>
             </a>
           }
@@ -87,7 +91,12 @@ import { AuthService } from '../../../core/services/auth.service';
           <div class="px-6 py-6 flex flex-col gap-1">
             @for (n of navLinks; track n.to) {
               <a [routerLink]="n.to" (click)="mobileOpen.set(false)"
-                class="py-3 text-lg border-b border-white/5">{{ n.label }}</a>
+                class="py-3 text-lg border-b border-white/5 flex items-center gap-2">
+                {{ n.label }}
+                @if (n.to === '/reservations' && reservationService.unseenCount() > 0) {
+                  <span class="w-2 h-2 rounded-full bg-accent"></span>
+                }
+              </a>
             }
             @if (auth.isLoggedIn()) {
               @if (auth.hasRole('ADMIN')) {
@@ -117,7 +126,7 @@ export class SiteNavComponent {
   readonly menuOpen = signal(false);
   readonly mobileOpen = signal(false);
 
-  readonly navLinks = [
+  private readonly baseNavLinks = [
     { label: 'Accueil', to: '/' },
     { label: 'Compétitions', to: '/competitions' },
     { label: 'Résultats', to: '/results' },
@@ -126,9 +135,16 @@ export class SiteNavComponent {
     { label: 'Athlètes', to: '/athletes' },
     { label: 'Clubs', to: '/athletes/clubs' },
     { label: 'Piscines', to: '/pools' },
+    { label: 'Réservations', to: '/reservations' },
   ];
 
-  constructor(readonly auth: AuthService) {}
+  get navLinks() {
+    return this.auth.hasRole('ADMIN')
+      ? this.baseNavLinks.filter(link => link.to !== '/reservations')
+      : this.baseNavLinks;
+  }
+
+  constructor(readonly auth: AuthService, readonly reservationService: ReservationService) {}
 
   @HostListener('window:scroll')
   onScroll(): void { this.scrolled.set(window.scrollY > 80); }

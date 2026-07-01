@@ -3,6 +3,8 @@ import { Component, HostListener, signal } from "@angular/core";
 import { RouterLink, RouterLinkActive } from "@angular/router";
 import { LucideAngularModule, ArrowUpRight, Menu, X } from "lucide-angular";
 import { AuthService } from "../../../../core/services/auth.service";
+import { ReservationService } from '../../../../modules/reservations/services/reservation.service';
+
 
 const HASH_LINKS = [
   { label: "Histoire",   href: "#histoire" },
@@ -53,10 +55,13 @@ const ROUTE_LINKS = [
             </a>
           }
           <span class="w-px h-4 bg-white/10 mx-1"></span>
-          @for (item of routeLinks; track item.to) {
+          @for (item of visibleRouteLinks(); track item.to) {
             <a [routerLink]="item.to" routerLinkActive="text-white !opacity-100"
               class="relative px-2 py-1.5 text-[11px] text-white/70 hover:text-white transition-colors group whitespace-nowrap">
               {{ item.label }}
+              @if (item.to === '/reservations' && reservationService.unseenCount() > 0) {
+                <span class="absolute top-1 right-0 w-2 h-2 rounded-full bg-accent"></span>
+              }
               <span class="absolute left-2 right-2 -bottom-0.5 h-px bg-accent scale-x-0 origin-left transition-transform group-hover:scale-x-100"></span>
             </a>
           }
@@ -76,8 +81,13 @@ const ROUTE_LINKS = [
                     <a routerLink="/admin" (click)="menuOpen.set(false)"
                       class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-white/5 transition-colors">Administration</a>
                   }
-                  <a routerLink="/reservations" (click)="menuOpen.set(false)"
-                    class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-white/5 transition-colors">Mes réservations</a>
+                  <a *ngIf="!auth.hasRole('ADMIN')" routerLink="/reservations" (click)="menuOpen.set(false)"
+                    class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-white/5 transition-colors">
+                    Mes réservations
+                    @if (reservationService.unseenCount() > 0) {
+                      <span class="w-2 h-2 rounded-full bg-accent"></span>
+                    }
+                  </a>
                   <button (click)="logout()"
                     class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-white/5 transition-colors w-full text-left text-white/70">
                     Déconnexion
@@ -113,10 +123,13 @@ const ROUTE_LINKS = [
                 {{ item.label }}
               </a>
             }
-            @for (item of routeLinks; track item.to) {
+            @for (item of visibleRouteLinks(); track item.to) {
               <a [routerLink]="item.to" (click)="open.set(false)"
-                class="py-3 text-base border-b border-white/5 text-white/80 hover:text-white transition-colors">
+                class="py-3 text-base border-b border-white/5 text-white/80 hover:text-white transition-colors flex items-center gap-2">
                 {{ item.label }}
+                @if (item.to === '/reservations' && reservationService.unseenCount() > 0) {
+                  <span class="w-2 h-2 rounded-full bg-accent"></span>
+                }
               </a>
             }
             @if (auth.isLoggedIn()) {
@@ -140,7 +153,13 @@ export class NavComponent {
   readonly hashLinks = HASH_LINKS;
   readonly routeLinks = ROUTE_LINKS;
 
-  constructor(readonly auth: AuthService) {}
+  visibleRouteLinks(): typeof ROUTE_LINKS {
+    return this.auth.hasRole('ADMIN')
+      ? this.routeLinks.filter(item => item.to !== '/reservations')
+      : this.routeLinks;
+  }
+
+  constructor(readonly auth: AuthService, readonly reservationService: ReservationService) {}
 
   @HostListener("window:scroll")
   onScroll(): void {
@@ -151,9 +170,4 @@ export class NavComponent {
     this.menuOpen.set(false);
     this.auth.logout();
   }
-  visibleRouteLinks(): typeof ROUTE_LINKS {
-  return this.auth.hasRole('ADMIN')
-    ? this.routeLinks.filter(item => item.to !== '/reservations')
-    : this.routeLinks;
-}
 }

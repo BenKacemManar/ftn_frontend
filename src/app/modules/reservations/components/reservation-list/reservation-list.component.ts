@@ -33,6 +33,10 @@ export class ReservationListComponent implements OnInit {
       next: (res) => { this.reservations = res; this.loading = false; },
       error: () => { this.error = 'Erreur lors du chargement.'; this.loading = false; }
     });
+
+    // Clear the red dot: optimistic reset + tell the backend
+    this.reservationService.unseenCount.set(0);
+    this.reservationService.markSeen().subscribe();
   }
 
   formatTime(time: string): string {

@@ -1,12 +1,33 @@
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Injectable, signal } from '@angular/core';
+import { Observable, Subscription, interval, startWith, switchMap, catchError, of } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Reservation, CreateReservationDto } from '../../../core/models/reservation.model';
 
 @Injectable({ providedIn: 'root' })
 export class ReservationService {
 
-  constructor(private api: ApiService) {}
+  readonly unseenCount = signal(0);   // red dot for regular users
+  readonly pendingCount = signal(0);  // badge count for admins
+
+  private pollSub?: Subscription;
+
+  constructor(private api: ApiService, private auth: AuthService) {
+    this.auth.currentUser$.subscribe(user => {
+      this.pollSub?.unsubscribe();
+      if (!user) {
+        this.unseenCount.set(0);
+        this.pendingCount.set(0);
+        return;
+      }
+      const isAdmin = user.role === 'ADMIN';
+      const request$ = isAdmin ? this.getPendingCount() : this.getUnseenCount();
+      this.pollSub = interval(30000).pipe(
+        startWith(0),
+        switchMap(() => request$.pipe(catchError(() => of({ count: 0 }))))
+      ).subscribe(res => isAdmin ? this.pendingCount.set(res.count) : this.unseenCount.set(res.count));
+    });
+  }
 
   getByPool(poolId: number): Observable<Reservation[]> {
     return this.api.get<Reservation[]>(`/reservations/pool/${poolId}`);
@@ -20,8 +41,8 @@ export class ReservationService {
     return this.api.get<any>('/reservations', params);
   }
 
-  approve(id: number): Observable<{ data: Reservation }> {
-    return this.api.put<{ data: Reservation }>(`/reservations/${id}/approve`, {});
+  approve(id: number, lanes: number[]): Observable<{ data: Reservation }> {
+    return this.api.put<{ data: Reservation }>(`/reservations/${id}/approve`, { lanes });
   }
 
   deny(id: number): Observable<{ data: Reservation }> {
@@ -34,5 +55,17 @@ export class ReservationService {
 
   cancel(id: number): Observable<void> {
     return this.api.delete<void>(`/reservations/${id}`);
+  }
+
+  getUnseenCount(): Observable<{ count: number }> {
+    return this.api.get<{ count: number }>('/reservations/unseen-count');
+  }
+
+  getPendingCount(): Observable<{ count: number }> {
+    return this.api.get<{ count: number }>('/reservations/pending-count');
+  }
+
+  markSeen(): Observable<void> {
+    return this.api.put<void>('/reservations/mark-seen', {});
   }
 }

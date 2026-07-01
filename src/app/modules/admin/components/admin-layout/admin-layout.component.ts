@@ -4,6 +4,7 @@ import {
   Newspaper, CreditCard, MessageCircle, Users, GraduationCap, Award, ArrowLeft, CalendarCheck
 } from 'lucide-angular';
 import { AuthService } from '../../../../core/services/auth.service';
+import { ReservationService } from '../../../reservations/services/reservation.service';
 
 const LINKS = [
   { label: 'Tableau de bord', to: '/admin',           icon: LayoutDashboard, exact: true },
@@ -45,6 +46,11 @@ const LINKS = [
               [title]="collapsed() ? link.label : ''">
               <span class="flex-shrink-0 w-4 text-center flex items-center justify-center"><lucide-icon [img]="link.icon" class="w-4 h-4"></lucide-icon></span>
               @if (!collapsed()) { <span>{{ link.label }}</span> }
+              @if (link.to === '/admin/reservations' && reservationService.pendingCount() > 0) {
+                <span class="ml-auto min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-accent text-[10px] font-medium">
+                  {{ reservationService.pendingCount() }}
+                </span>
+              }
             </a>
           }
         </nav>
@@ -82,5 +88,5 @@ export class AdminLayoutComponent {
   readonly collapsed = signal(false);
   readonly links = LINKS;
   readonly ArrowLeft = ArrowLeft;
-  constructor(readonly auth: AuthService) {}
+  constructor(readonly auth: AuthService, readonly reservationService: ReservationService) {}
 }

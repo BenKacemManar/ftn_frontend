@@ -6,8 +6,8 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
     @if (open) {
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
         (click)="onBackdropClick()">
-        <div class="bg-[#120101] border border-white/10 rounded-xl p-8 w-full shadow-2xl relative overflow-hidden max-h-[90vh] overflow-y-auto"
-          [class]="maxWidth" (click)="$event.stopPropagation()">
+        <div class="no-scrollbar bg-[#120101] border border-white/10 rounded-xl p-8 w-full shadow-2xl relative overflow-hidden max-h-[90vh] overflow-y-auto"
+  [class]="maxWidth" (click)="$event.stopPropagation()">
           <div class="absolute top-0 inset-x-0 h-0.5" style="background:linear-gradient(90deg,#E10600,#D4AF37)"></div>
           <div class="flex items-start justify-between mb-6">
             @if (title) { <h2 class="font-serif text-2xl">{{ title }}</h2> }
@@ -19,7 +19,16 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
         </div>
       </div>
     }
-  `
+  `,
+  styles: [`
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+  `]
 })
 export class ModalComponent {
   @Input() open = false;
