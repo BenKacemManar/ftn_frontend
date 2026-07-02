@@ -7,6 +7,7 @@ import { AuthService } from '../../../../core/services/auth.service';
 import { PageLayoutComponent } from '../../../../shared/components/page-layout/page-layout.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
+import { TranslationService } from '../../../../core/i18n/translation.service';
 
 const S2F: Record<string,string> = { PLANIFIEE:'upcoming',EN_COURS:'ongoing',TERMINEE:'finished',ANNULEE:'cancelled' };
 const F2B: Record<string,string> = { upcoming:'PLANIFIEE',ongoing:'EN_COURS',finished:'TERMINEE',cancelled:'ANNULEE' };
@@ -19,18 +20,18 @@ const F2B: Record<string,string> = { upcoming:'PLANIFIEE',ongoing:'EN_COURS',fin
         <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-12">
           <div>
             <div class="flex items-center gap-4 mb-6">
-              <span class="text-xs tracking-[0.3em] uppercase text-white/40">01</span>
+              <span class="text-xs tracking-[0.3em] uppercase text-white/40">{{ 'competitions.list.kicker' | translate }}</span>
               <span class="h-px w-10 bg-accent"></span>
-              <span class="text-xs tracking-[0.3em] uppercase text-white/70">Compétitions</span>
+              <span class="text-xs tracking-[0.3em] uppercase text-white/70">{{ 'nav.competitions' | translate }}</span>
             </div>
             <h1 class="font-serif text-5xl lg:text-7xl leading-[0.95]">
-              Calendrier <br/><span class="italic text-gold">des épreuves.</span>
+              {{ 'competitions.list.titleLine1' | translate }} <br/><span class="italic text-gold">{{ 'competitions.list.titleItalic' | translate }}</span>
             </h1>
           </div>
           @if (auth.hasRole('ADMIN') || auth.hasRole('COACH')) {
             <button (click)="formOpen.set(true)"
               class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent text-white hover:bg-white hover:text-black transition-colors text-sm">
-              + Nouvelle compétition
+              {{ 'competitions.list.newCompetition' | translate }}
             </button>
           }
         </div>
@@ -41,9 +42,9 @@ const F2B: Record<string,string> = { upcoming:'PLANIFIEE',ongoing:'EN_COURS',fin
           (groupChange)="onFilterGroupChange($event)" />
 
         @if (loading()) {
-          <div class="text-white/40 text-center py-20">Chargement…</div>
+          <div class="text-white/40 text-center py-20">{{ 'common.loading' | translate }}</div>
         } @else if (competitions().length === 0) {
-          <div class="text-white/40 text-center py-20">Aucune compétition trouvée.</div>
+          <div class="text-white/40 text-center py-20">{{ 'competitions.list.empty' | translate }}</div>
         } @else {
           <div class="border-t border-white/10">
             @for (c of competitions(); track c.id) {
@@ -61,11 +62,11 @@ const F2B: Record<string,string> = { upcoming:'PLANIFIEE',ongoing:'EN_COURS',fin
                 <div class="hidden lg:block col-span-3 text-white/50 text-sm">
                   {{ fmtDate(c.startDate) }} — {{ fmtDate(c.endDate) }}
                 </div>
-                <div class="hidden lg:block col-span-2 text-white/50 text-sm">{{ c.city || c.poolName }}</div>
+                <div class="hidden lg:block col-span-2 text-white/50 text-sm">{{ c.poolVille || c.poolNom || '—' }}</div>
                 <div class="col-span-3 lg:col-span-1 flex justify-end">
                   <a [routerLink]="['/competitions', c.id]"
                     class="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center hover:bg-accent hover:border-accent transition-colors text-lg">
-                    →
+                    <span class="rtl-flip">→</span>
                   </a>
                 </div>
               </div>
@@ -77,7 +78,7 @@ const F2B: Record<string,string> = { upcoming:'PLANIFIEE',ongoing:'EN_COURS',fin
       </section>
     </app-page-layout>
 
-    <app-modal [open]="formOpen()" title="Nouvelle compétition" (closed)="formOpen.set(false)">
+    <app-modal [open]="formOpen()" [title]="'competitions.list.newCompetitionModalTitle' | translate" (closed)="formOpen.set(false)">
       <app-competition-form [id]="null" (saved)="onFormSaved()"></app-competition-form>
     </app-modal>
   `
@@ -89,16 +90,26 @@ export class CompetitionListComponent implements OnInit {
   total = 0; page = 1; pageSize = 10;
   statusFilter = ''; typeFilter = '';
 
-  readonly statusOpts = [
-    { value:'', label:'Tous' }, { value:'upcoming', label:'À venir' },
-    { value:'ongoing', label:'En cours' }, { value:'finished', label:'Terminée' }, { value:'cancelled', label:'Annulée' }
-  ];
-  readonly typeOpts = [
-    { value:'', label:'Tous types' }, { value:'hiver', label:'Hiver' },
-    { value:'ete', label:'Été' }, { value:'open', label:'Open' }, { value:'international', label:'International' }
-  ];
+  constructor(private api: ApiService, readonly auth: AuthService, private i18n: TranslationService) {}
 
-  constructor(private api: ApiService, readonly auth: AuthService) {}
+  get statusOpts() {
+    return [
+      { value:'', label: this.i18n.t('competitions.statusOpts.all') },
+      { value:'upcoming', label: this.i18n.t('competitions.statusOpts.upcoming') },
+      { value:'ongoing', label: this.i18n.t('competitions.statusOpts.ongoing') },
+      { value:'finished', label: this.i18n.t('competitions.statusOpts.finished') },
+      { value:'cancelled', label: this.i18n.t('competitions.statusOpts.cancelled') },
+    ];
+  }
+  get typeOpts() {
+    return [
+      { value:'', label: this.i18n.t('competitions.typeOpts.all') },
+      { value:'hiver', label: this.i18n.t('competitions.typeOpts.hiver') },
+      { value:'ete', label: this.i18n.t('competitions.typeOpts.ete') },
+      { value:'open', label: this.i18n.t('competitions.typeOpts.open') },
+      { value:'international', label: this.i18n.t('competitions.typeOpts.international') },
+    ];
+  }
 
   ngOnInit(): void { this.load(); }
 
@@ -111,7 +122,7 @@ export class CompetitionListComponent implements OnInit {
       next: r => {
         const items = (r?.data ?? r?.content ?? []).map((c: any) => ({ ...c, status: S2F[c.status] ?? c.status }));
         this.competitions.set(items);
-        this.total = r?.totalCount ?? r?.totalElements ?? items.length;
+        this.total = r?.totalCount ?? r?.total_count ?? r?.totalElements ?? items.length;
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
@@ -138,6 +149,7 @@ export class CompetitionListComponent implements OnInit {
 
   fmtDate(d?: string): string {
     if (!d) return '—';
-    return new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' });
+    const locale = this.i18n.locale() === 'en' ? 'en-GB' : this.i18n.locale() === 'ar' ? 'ar-TN' : 'fr-FR';
+    return new Date(d).toLocaleDateString(locale, { day:'2-digit', month:'short', year:'numeric' });
   }
 }

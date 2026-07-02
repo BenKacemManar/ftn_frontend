@@ -5,20 +5,21 @@ import { LucideAngularModule, ArrowUpRight, Menu, X } from "lucide-angular";
 import { AuthService } from "../../../../core/services/auth.service";
 
 const HASH_LINKS = [
-  { label: "Histoire",   href: "#histoire" },
-  { label: "Programmes", href: "#programmes" },
-  { label: "Champions",  href: "#champions" },
-  { label: "Palmarès",   href: "#palmares" },
+  { labelKey: "nav.histoire",   href: "#histoire" },
+  { labelKey: "nav.programmes", href: "#programmes" },
+  { labelKey: "nav.champions",  href: "#champions" },
+  { labelKey: "nav.palmares",   href: "#palmares" },
 ];
 
 const ROUTE_LINKS = [
-  { label: "Compétitions", to: "/competitions" },
-  { label: "Résultats",    to: "/results" },
-  { label: "Actualités",   to: "/news" },
-  { label: "Forum",        to: "/forum" },
-  { label: "Athlètes",     to: "/athletes" },
-  { label: "Clubs",        to: "/athletes/clubs" },
-  { label: "Piscines",     to: "/pools" },
+  { labelKey: "nav.competitions", to: "/competitions" },
+  { labelKey: "nav.results",      to: "/results" },
+  { labelKey: "nav.news",         to: "/news" },
+  { labelKey: "nav.forum",        to: "/forum" },
+  { labelKey: "nav.athletes",     to: "/athletes" },
+  { labelKey: "nav.clubs",        to: "/athletes/clubs" },
+  { labelKey: "nav.pools",        to: "/pools" },
+  { labelKey: "nav.evenements",   to: "/evenements" },
 ];
 
 @Component({
@@ -36,8 +37,8 @@ const ROUTE_LINKS = [
         <a routerLink="/" class="flex items-center gap-3 flex-shrink-0 whitespace-nowrap">
           <img src="assets/logo.png" alt="EST" class="w-11 h-11 object-contain rounded-full ring-1 ring-white/20 flex-shrink-0" />
           <div class="leading-tight min-w-0">
-            <div class="text-[11px] tracking-[0.3em] text-white/50 uppercase">Espérance · 1919</div>
-            <div class="text-sm tracking-[0.25em] uppercase">Section Natation</div>
+            <div class="text-[11px] tracking-[0.3em] text-white/50 uppercase">{{ 'nav.brandLine' | translate }}</div>
+            <div class="text-sm tracking-[0.25em] uppercase">{{ 'nav.brandSection' | translate }}</div>
           </div>
         </a>
 
@@ -49,7 +50,7 @@ const ROUTE_LINKS = [
               [href]="item.href"
               class="relative px-4 py-2 text-sm text-white/70 hover:text-white transition-colors group"
             >
-              {{ item.label }}
+              {{ item.labelKey | translate }}
               <span class="absolute left-4 right-4 -bottom-0.5 h-px bg-accent scale-x-0 origin-left transition-transform group-hover:scale-x-100"></span>
             </a>
           }
@@ -64,7 +65,7 @@ const ROUTE_LINKS = [
               routerLinkActive="text-white !opacity-100"
               class="relative px-4 py-2 text-sm text-white/70 hover:text-white transition-colors group"
             >
-              {{ item.label }}
+              {{ item.labelKey | translate }}
               <span class="absolute left-4 right-4 -bottom-0.5 h-px bg-accent scale-x-0 origin-left transition-transform group-hover:scale-x-100"></span>
             </a>
           }
@@ -72,6 +73,7 @@ const ROUTE_LINKS = [
 
         <!-- Auth / Contact -->
         <div class="hidden lg:flex items-center gap-3">
+          <app-language-switcher></app-language-switcher>
           @if (auth.isLoggedIn()) {
             <div class="relative">
               <button
@@ -85,28 +87,32 @@ const ROUTE_LINKS = [
                   @if (auth.hasRole('ADMIN')) {
                     <a routerLink="/admin" (click)="menuOpen.set(false)"
                       class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-white/5 transition-colors">
-                      Administration
+                      {{ 'nav.administration' | translate }}
                     </a>
                   }
+                  <a routerLink="/reservations" (click)="menuOpen.set(false)"
+                    class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-white/5 transition-colors">
+                    {{ 'nav.reservations' | translate }}
+                  </a>
                   <a routerLink="/results/my" (click)="menuOpen.set(false)"
                     class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-white/5 transition-colors">
-                    Mes résultats
+                    {{ 'nav.myResults' | translate }}
                   </a>
                   <button
                     (click)="logout()"
                     class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-white/5 transition-colors w-full text-left text-white/70"
                   >
-                    Déconnexion
+                    {{ 'common.logout' | translate }}
                   </button>
                 </div>
               }
             </div>
           } @else {
             <a
-              href="#contact"
+              routerLink="/auth/login"
               class="hidden lg:inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black text-sm hover:bg-accent hover:text-white transition-colors"
             >
-              Rejoindre <lucide-icon [img]="ArrowUpRight" class="w-4 h-4"></lucide-icon>
+              {{ 'nav.join' | translate }} <lucide-icon [img]="ArrowUpRight" class="w-4 h-4"></lucide-icon>
             </a>
           }
         </div>
@@ -125,20 +131,24 @@ const ROUTE_LINKS = [
       @if (open()) {
         <div class="lg:hidden overflow-hidden border-t border-white/10 bg-black/95">
           <div class="px-6 py-6 flex flex-col gap-1">
+            <div class="py-3"><app-language-switcher></app-language-switcher></div>
             @for (item of hashLinks; track item.href) {
               <a [href]="item.href" (click)="open.set(false)" class="py-3 text-lg border-b border-white/5">
-                {{ item.label }}
+                {{ item.labelKey | translate }}
               </a>
             }
             @for (item of routeLinks; track item.to) {
               <a [routerLink]="item.to" (click)="open.set(false)" class="py-3 text-lg border-b border-white/5">
-                {{ item.label }}
+                {{ item.labelKey | translate }}
               </a>
             }
             @if (auth.isLoggedIn()) {
-              <button (click)="logout()" class="py-3 text-lg text-white/60 text-left">Déconnexion</button>
+              <a routerLink="/reservations" (click)="open.set(false)" class="py-3 text-lg border-b border-white/5">
+                {{ 'nav.reservations' | translate }}
+              </a>
+              <button (click)="logout()" class="py-3 text-lg text-white/60 text-left">{{ 'common.logout' | translate }}</button>
             } @else {
-              <a routerLink="/auth/login" (click)="open.set(false)" class="py-3 text-lg text-accent">Connexion</a>
+              <a routerLink="/auth/login" (click)="open.set(false)" class="py-3 text-lg text-accent">{{ 'common.login' | translate }}</a>
             }
           </div>
         </div>

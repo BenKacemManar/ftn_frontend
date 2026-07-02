@@ -5,10 +5,11 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
 import { PageLayoutComponent } from '../../../../shared/components/page-layout/page-layout.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { TranslationService } from '../../../../core/i18n/translation.service';
 
-const CATS = [
-  { v:'', l:'Tout' }, { v:'NATATION', l:'Natation' }, { v:'COMPETITION', l:'Compétitions' }, { v:'FORMATION', l:'Formation' },
-  { v:'GOUVERNANCE', l:'Gouvernance' }, { v:'INFRASTRUCTURE', l:'Infrastructure' }, { v:'GENERAL', l:'Général' }
+const CAT_KEYS = [
+  { v: '', k: 'all' }, { v: 'NATATION', k: 'natation' }, { v: 'COMPETITION', k: 'competition' }, { v: 'FORMATION', k: 'formation' },
+  { v: 'GOUVERNANCE', k: 'gouvernance' }, { v: 'INFRASTRUCTURE', k: 'infrastructure' }, { v: 'GENERAL', k: 'general' }
 ];
 
 @Component({
@@ -19,22 +20,22 @@ const CATS = [
         <div class="mb-12">
           <div class="flex items-center gap-4 mb-6">
             <span class="h-px w-10 bg-accent"></span>
-            <span class="text-xs tracking-[0.3em] uppercase text-white/70">Actualités</span>
+            <span class="text-xs tracking-[0.3em] uppercase text-white/70">{{ 'content.list.kicker' | translate }}</span>
           </div>
           <h1 class="font-serif text-5xl lg:text-7xl leading-[0.95]">
-            Toutes les <br/><span class="italic text-gold">nouvelles.</span>
+            {{ 'content.list.titleLine1' | translate }} <br/><span class="italic text-gold">{{ 'content.list.titleItalic' | translate }}</span>
           </h1>
         </div>
         <app-filter-bar
-          searchPlaceholder="Rechercher…"
+          [searchPlaceholder]="'content.list.searchPlaceholder' | translate"
           [searchValue]="search"
           (searchValueChange)="onSearchValue($event)"
           [groups]="filterGroups"
           (groupChange)="onFilterGroupChange($event)" />
         @if (loading()) {
-          <div class="text-white/40 text-center py-20">Chargement…</div>
+          <div class="text-white/40 text-center py-20">{{ 'common.loading' | translate }}</div>
         } @else if (news().length === 0) {
-          <div class="text-white/40 text-center py-20">Aucune actualité.</div>
+          <div class="text-white/40 text-center py-20">{{ 'content.list.empty' | translate }}</div>
         } @else {
           <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-px" style="background:rgba(255,255,255,0.05)">
             @for (item of news(); track item.id) {
@@ -48,7 +49,7 @@ const CATS = [
                 }
                 <div class="flex items-center gap-3 mb-3">
                   <span class="text-[10px] tracking-[0.2em] uppercase px-2 py-0.5 rounded-full text-accent" style="background:rgba(225,6,0,0.1)">
-                    {{ item.categorie?.toLowerCase() }}
+                    {{ catLabel(item.categorie) }}
                   </span>
                   <span class="text-xs text-white/30">{{ fmtDate(item.datePublication || item.createdAt) }}</span>
                 </div>
@@ -56,7 +57,7 @@ const CATS = [
                 <p class="text-sm text-white/50 line-clamp-2 mb-4">{{ item.contenu }}</p>
                 <div class="flex items-center justify-between mt-auto">
                   <span class="text-xs text-white/30">{{ item.auteurNom }}</span>
-                  <span class="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-accent group-hover:border-accent transition-colors text-sm">
+                  <span class="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-accent group-hover:border-accent transition-colors text-sm rtl-flip">
                     &rarr;
                   </span>
                 </div>
@@ -73,9 +74,9 @@ export class NewsListComponent implements OnInit {
   readonly news = signal<any[]>([]);
   readonly loading = signal(false);
   total = 0; page = 1; search = ''; categorie = '';
-  readonly CATS = CATS;
+  readonly CAT_KEYS = CAT_KEYS;
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private i18n: TranslationService) {}
   ngOnInit(): void { this.load(); }
 
   load(): void {
@@ -90,7 +91,12 @@ export class NewsListComponent implements OnInit {
   }
 
   get filterGroups() {
-    return [{ options: this.CATS.map(c => ({ value: c.v, label: c.l })), selected: this.categorie }];
+    return [{ options: this.CAT_KEYS.map(c => ({ value: c.v, label: this.i18n.t('content.categories.' + c.k) })), selected: this.categorie }];
+  }
+
+  catLabel(categorie?: string): string {
+    const found = this.CAT_KEYS.find(c => c.v === (categorie ?? '').toUpperCase());
+    return found ? this.i18n.t('content.categories.' + found.k) : (categorie ?? '').toLowerCase();
   }
 
   onSearchValue(v: string): void { this.search = v; this.page = 1; this.load(); }

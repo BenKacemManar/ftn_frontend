@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
 import { PageLayoutComponent } from '../../../../shared/components/page-layout/page-layout.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { TranslationService } from '../../../../core/i18n/translation.service';
 
 @Component({
   selector: 'app-clubs-list',
@@ -15,20 +16,20 @@ import { PaginationComponent } from '../../../../shared/components/pagination/pa
           <div>
             <div class="flex items-center gap-4 mb-6">
               <span class="h-px w-10 bg-accent"></span>
-              <span class="text-xs tracking-[0.3em] uppercase text-white/70">Clubs</span>
+              <span class="text-xs tracking-[0.3em] uppercase text-white/70">{{ 'athletesClubs.clubsList.kicker' | translate }}</span>
             </div>
             <h1 class="font-serif text-5xl lg:text-7xl leading-[0.95]">
-              Les clubs <br/><span class="italic text-gold">affiliés.</span>
+              {{ 'athletesClubs.clubsList.titleLine1' | translate }} <br/><span class="italic text-gold">{{ 'athletesClubs.clubsList.titleItalic' | translate }}</span>
             </h1>
           </div>
-          <a routerLink="/athletes" class="px-5 py-2.5 rounded-full border border-white/20 hover:border-white text-sm transition-colors">← Athlètes</a>
+          <a routerLink="/athletes" class="px-5 py-2.5 rounded-full border border-white/20 hover:border-white text-sm transition-colors">{{ 'athletesClubs.clubsList.backToAthletes' | translate }}</a>
         </div>
         <app-filter-bar
-          searchPlaceholder="Rechercher un club…"
+          [searchPlaceholder]="'athletesClubs.clubsList.searchPlaceholder' | translate"
           [searchValue]="search"
           (searchValueChange)="onSearchValue($event)" />
         @if (loading()) {
-          <div class="text-white/40 text-center py-20">Chargement…</div>
+          <div class="text-white/40 text-center py-20">{{ 'common.loading' | translate }}</div>
         } @else {
           <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             @for (c of pageItems(); track c.id) {
@@ -38,15 +39,15 @@ import { PaginationComponent } from '../../../../shared/components/pagination/pa
                   <div class="w-14 h-14 rounded-full bg-[#1a0000] border border-white/10 flex items-center justify-center font-serif text-xl text-white/30">
                     {{ c.nom?.[0] || '?' }}
                   </div>
-                  <span class="text-lg opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                  <span class="text-lg opacity-0 group-hover:opacity-100 transition-opacity rtl-flip">→</span>
                 </div>
                 <h3 class="font-serif text-xl mb-2">{{ c.nom }}</h3>
                 <div class="text-sm text-white/50">{{ joinArr([c.ville, c.region]) }}</div>
-                @if (c.presidentNom) { <div class="text-xs text-white/30 mt-2">Pdt : {{ c.presidentNom }}</div> }
-                <div class="mt-3 text-xs" [style.color]="c.actif ? '#10B981' : '#6B7280'">{{ c.actif ? 'Actif' : 'Inactif' }}</div>
+                @if (c.presidentNom) { <div class="text-xs text-white/30 mt-2">{{ i18n.t('athletesClubs.clubsList.president', { name: c.presidentNom }) }}</div> }
+                <div class="mt-3 text-xs" [style.color]="c.actif ? '#10B981' : '#6B7280'">{{ c.actif ? ('common.active' | translate) : ('common.inactive' | translate) }}</div>
               </a>
             }
-            @empty { <div class="col-span-3 text-white/40 text-center py-10">Aucun club.</div> }
+            @empty { <div class="col-span-3 text-white/40 text-center py-10">{{ 'athletesClubs.clubsList.empty' | translate }}</div> }
           </div>
           <app-pagination [page]="page" [total]="filtered().length" [pageSize]="pageSize" (pageChange)="onPage($event)" />
         }
@@ -76,7 +77,7 @@ export class ClubsListComponent implements OnInit {
 
   joinArr(arr: (string|undefined)[]): string { return arr.filter(Boolean).join(' · '); }
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, readonly i18n: TranslationService) {}
   ngOnInit(): void { this.load(); }
 
   load(): void {

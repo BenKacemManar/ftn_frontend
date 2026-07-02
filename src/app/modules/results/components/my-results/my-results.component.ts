@@ -15,21 +15,21 @@ const RS: Record<string,string> = { EN_ATTENTE:'pending', VALIDE:'ok', DQ:'DQ', 
       <section class="mx-auto max-w-[1400px] px-6 lg:px-10 py-16">
         <div class="flex items-center gap-4 mb-8">
           <span class="h-px w-10 bg-accent"></span>
-          <span class="text-xs tracking-[0.3em] uppercase text-white/70">Mes résultats</span>
+          <span class="text-xs tracking-[0.3em] uppercase text-white/70">{{ 'results.my.kicker' | translate }}</span>
         </div>
         <h1 class="font-serif text-5xl lg:text-6xl leading-[0.95] mb-12">
-          Mes <span class="italic text-gold">performances.</span>
+          {{ 'results.my.titleLine1' | translate }} <span class="italic text-gold">{{ 'results.my.titleItalic' | translate }}</span>
         </h1>
         @if (loading()) {
-          <div class="text-white/40 text-center py-20">Chargement…</div>
+          <div class="text-white/40 text-center py-20">{{ 'common.loading' | translate }}</div>
         } @else if (results().length === 0) {
-          <div class="text-white/40 text-center py-20">Aucun résultat.</div>
+          <div class="text-white/40 text-center py-20">{{ 'common.noResults' | translate }}</div>
         } @else {
           <div>
             <div class="grid grid-cols-12 text-xs tracking-[0.2em] uppercase text-white/40 border-b border-white/10 pb-3 mb-2 px-2">
-              <div class="col-span-1">St.</div><div class="col-span-4">Épreuve</div>
-              <div class="col-span-3">Compétition</div><div class="col-span-2">Temps</div>
-              <div class="col-span-1">FINA</div><div class="col-span-1">Rang</div>
+              <div class="col-span-1">{{ 'results.my.colStatus' | translate }}</div><div class="col-span-4">{{ 'results.my.colEvent' | translate }}</div>
+              <div class="col-span-3">{{ 'results.my.colCompetition' | translate }}</div><div class="col-span-2">{{ 'results.my.colTime' | translate }}</div>
+              <div class="col-span-1">{{ 'results.my.colFina' | translate }}</div><div class="col-span-1">{{ 'results.my.colRank' | translate }}</div>
             </div>
             @for (r of results(); track r.id) {
               <div class="grid grid-cols-12 items-center py-4 border-b border-white/10 hover:bg-white/[0.02] px-2 transition-colors">
@@ -38,7 +38,7 @@ const RS: Record<string,string> = { EN_ATTENTE:'pending', VALIDE:'ok', DQ:'DQ', 
                 <div class="col-span-3 text-sm text-white/50">{{ r.competitionName || '—' }}</div>
                 <div class="col-span-2">
                   <span class="font-serif text-xl" [style.color]="r.isRecord?'#D4AF37':'white'">{{ r.tempsDisplay || fmtMs(r.tempsMs) }}</span>
-                  @if (r.isRecord) { <span class="ml-2 text-xs text-gold">Record !</span> }
+                  @if (r.isRecord) { <span class="ml-2 text-xs text-gold">{{ 'results.my.record' | translate }}</span> }
                 </div>
                 <div class="col-span-1 text-sm text-white/50">{{ r.pointsFina || '—' }}</div>
                 <div class="col-span-1 text-sm font-medium" [style.color]="r.rank&&r.rank<=3?'#D4AF37':''">
@@ -65,10 +65,20 @@ export class MyResultsComponent implements OnInit {
     const uid = this.auth.currentUser?.id;
     if (!uid) return;
     this.loading.set(true);
-    this.api.get<any>(`/results/athlete/${uid}`, { page: this.page - 1, size: 10 }).subscribe({
+    this.api.get<any>(`/results/athlete/${uid}`).subscribe({
       next: r => {
-        this.results.set((r?.data ?? r?.content ?? []).map((x: any) => ({ ...x, status: RS[x.status] ?? x.status })));
-        this.total = r?.totalCount ?? r?.totalElements ?? 0;
+        const list = Array.isArray(r) ? r : (r?.data ?? r?.content ?? []);
+        this.results.set(list.map((x: any) => ({
+          ...x,
+          status: RS[x.statut ?? x.status] ?? x.statut ?? x.status,
+          eventLabel: x.epreuve ?? x.eventLabel ?? null,
+          competitionName: x.competitionNom ?? x.competitionName ?? null,
+          tempsDisplay: x.temps ?? x.tempsDisplay ?? null,
+          rank: x.rang ?? x.rank ?? null,
+          pointsFina: x.pointsFina ?? null,
+          isRecord: x.isRecord ?? false,
+        })));
+        this.total = list.length;
         this.loading.set(false);
       },
       error: () => this.loading.set(false)

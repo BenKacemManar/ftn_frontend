@@ -2,15 +2,25 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin, catchError, of } from 'rxjs';
 import { ApiService } from '../../../../core/services/api.service';
+import { TranslationService } from '../../../../core/i18n/translation.service';
 
-const POSTE_LABELS: Record<string, string> = {
-  ENTRAINEUR_CHEF: 'Entraîneur chef',
-  ENTRAINEUR_ADJOINT: 'Entraîneur adjoint',
-  ARBITRE: 'Arbitre',
-  MEDECIN: 'Médecin',
-  KINE: 'Kinésithérapeute',
-  DIRECTEUR_TECHNIQUE: 'Directeur technique',
-  CHRONOMETREUR: 'Chronométreur',
+const POSTE_LABEL_KEYS: Record<string, string> = {
+  ENTRAINEUR_CHEF: 'athletesClubs.clubDetail.roles.entraineurChef',
+  ENTRAINEUR_ADJOINT: 'athletesClubs.clubDetail.roles.entraineurAdjoint',
+  ARBITRE: 'athletesClubs.clubDetail.roles.arbitre',
+  MEDECIN: 'athletesClubs.clubDetail.roles.medecin',
+  KINE: 'athletesClubs.clubDetail.roles.kine',
+  DIRECTEUR_TECHNIQUE: 'athletesClubs.clubDetail.roles.directeurTechnique',
+  CHRONOMETREUR: 'athletesClubs.clubDetail.roles.chronometreur',
+};
+
+const CATEGORY_LABEL_KEYS: Record<string, string> = {
+  POUSSIN: 'athletesClubs.categories.poussin',
+  BENJAMIN: 'athletesClubs.categories.benjamin',
+  MINIME: 'athletesClubs.categories.minime',
+  CADET: 'athletesClubs.categories.cadet',
+  JUNIOR: 'athletesClubs.categories.junior',
+  SENIOR: 'athletesClubs.categories.senior',
 };
 
 const TAB_ACTIVE   = 'px-5 py-3 text-sm transition-colors relative text-white';
@@ -221,7 +231,7 @@ export class ClubDetailComponent implements OnInit {
     return list;
   });
 
-  constructor(private api: ApiService, private route: ActivatedRoute) {}
+  constructor(private api: ApiService, private route: ActivatedRoute, private i18n: TranslationService) {}
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -245,7 +255,13 @@ export class ClubDetailComponent implements OnInit {
   }
 
   posteLabel(value: string): string {
-    return POSTE_LABELS[value] ?? value;
+    const key = POSTE_LABEL_KEYS[value];
+    return key ? this.i18n.t(key) : value;
+  }
+
+  categoryLabel(value: string): string {
+    const key = CATEGORY_LABEL_KEYS[value];
+    return key ? this.i18n.t(key) : value;
   }
 
   fmtDate(d?: string): string {

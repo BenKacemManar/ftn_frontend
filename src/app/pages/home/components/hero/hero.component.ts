@@ -51,25 +51,24 @@ const FOUNDING_YEAR = 1919;
             <div class="flex items-center gap-3 mb-8 anim-up">
               <span class="h-px w-12 bg-accent pulse-blood" style="display:inline-block"></span>
               <span class="text-[11px] tracking-[0.4em] uppercase text-white/70">
-                Sang &amp; Or · Depuis 1919
+                {{ 'home.hero.tagline' | translate }}
               </span>
             </div>
 
             <!-- Headline -->
             <h1 class="font-serif leading-[0.88] tracking-tight">
               <span class="line-mask" #line1>
-                <span class="line-inner text-[14vw] lg:text-[9.5vw] shimmer-gold">L'eau,</span>
+                <span class="line-inner text-[14vw] lg:text-[9.5vw] shimmer-gold">{{ 'home.hero.headlineLine1' | translate }}</span>
               </span>
               <span class="line-mask" #line2>
                 <span class="line-inner text-[14vw] lg:text-[9.5vw] italic">
-                  notre <span class="text-accent" style="text-shadow: 0 0 40px rgba(225,6,0,0.5)">arène.</span>
+                  {{ 'home.hero.headlinePre' | translate }}<span class="text-accent" style="text-shadow: 0 0 40px rgba(225,6,0,0.5)">{{ 'home.hero.headlineWord' | translate }}</span>
                 </span>
               </span>
             </h1>
 
             <p class="mt-8 max-w-xl text-white/70 text-base lg:text-lg leading-relaxed anim-up-d2">
-              La section natation de l'Espérance Sportive de Tunis forme depuis un siècle
-              les nageurs qui repoussent les limites du sport tunisien.
+              {{ 'home.hero.paragraph' | translate }}
             </p>
 
             <div class="mt-10 flex flex-wrap items-center gap-4 anim-up-d3">
@@ -78,36 +77,36 @@ const FOUNDING_YEAR = 1919;
                 class="group inline-flex items-center gap-3 px-7 py-4 bg-accent hover:bg-white hover:text-black transition-all duration-300 rounded-full text-sm tracking-wide"
                 style="animation: btn-blood-pulse 3s ease-in-out infinite"
               >
-                Découvrir les programmes
-                <lucide-icon [img]="ArrowUpRight" class="w-4 h-4 transition-transform group-hover:rotate-45"></lucide-icon>
+                {{ 'home.hero.ctaPrograms' | translate }}
+                <lucide-icon [img]="ArrowUpRight" class="w-4 h-4 transition-transform group-hover:rotate-45 rtl-flip"></lucide-icon>
               </a>
               <a
                 href="#histoire"
                 class="inline-flex items-center gap-3 px-7 py-4 border border-white/20 hover:border-gold rounded-full text-sm tracking-wide transition-colors duration-300"
               >
-                Notre histoire
+                {{ 'home.hero.ctaHistoire' | translate }}
               </a>
             </div>
           </div>
 
           <!-- Side stats -->
           <div class="hidden lg:flex col-span-3 flex-col items-end gap-6 text-right anim-up-d1">
-            <div class="text-[11px] tracking-[0.3em] uppercase text-white/40">Saison 2025/26</div>
+            <div class="text-[11px] tracking-[0.3em] uppercase text-white/40">{{ 'home.hero.season' | translate }}</div>
             <div>
               <div class="font-serif text-6xl glow-gold" style="color:#D4AF37">{{ yearsOfGlory }}</div>
-              <div class="text-xs tracking-[0.2em] uppercase text-white/50 mt-2">années de gloire</div>
+              <div class="text-xs tracking-[0.2em] uppercase text-white/50 mt-2">{{ 'home.hero.yearsOfGloryLabel' | translate }}</div>
             </div>
             <div class="h-px w-20 bg-gradient-to-r from-accent to-gold ml-auto opacity-60"></div>
             <div>
               <div class="font-serif text-6xl text-white">{{ activeCompetitions }}</div>
-              <div class="text-xs tracking-[0.2em] uppercase text-white/50 mt-2">compétitions actives</div>
+              <div class="text-xs tracking-[0.2em] uppercase text-white/50 mt-2">{{ 'home.hero.activeCompetitionsLabel' | translate }}</div>
             </div>
           </div>
         </div>
 
         <div class="pb-8 flex items-center justify-between text-[11px] tracking-[0.3em] uppercase text-white/40">
-          <span>Tunis · Tunisie</span>
-          <span class="hidden md:inline">↓ Défiler</span>
+          <span>{{ 'home.hero.location' | translate }}</span>
+          <span class="hidden md:inline">{{ 'home.hero.scrollDown' | translate }}</span>
           <span>EST · الترجي الرياضي التونسي</span>
         </div>
       </div>

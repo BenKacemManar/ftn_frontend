@@ -36,3 +36,19 @@ export interface PagedResult<T> {
   page: number;
   pageSize: number;
 }
+
+export interface ResultFilter {
+  search?: string;
+  gender?: string;
+  year?: number | string;
+  competitionType?: string;
+  discipline?: string;
+}
+
+export interface RankingFilter {
+  season?: string;
+  gender?: string;
+  ageCategory?: string;
+  swimStyle?: string;
+  distance?: string | number;
+}

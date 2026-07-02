@@ -13,7 +13,7 @@ import { Component } from "@angular/core";
       <div class="marquee-track gap-16">
         @for (w of loop; track $index) {
           <div class="flex items-center gap-16 shrink-0">
-            <span class="font-serif text-5xl lg:text-7xl tracking-tight shimmer-gold">{{ w }}</span>
+            <span class="font-serif text-5xl lg:text-7xl tracking-tight shimmer-gold">{{ w.key ? (w.key | translate) : w.text }}</span>
             <span class="w-2 h-2 rounded-full" style="background: radial-gradient(circle, #D4AF37, #a07820)"></span>
           </div>
         }
@@ -22,6 +22,13 @@ import { Component } from "@angular/core";
   `,
 })
 export class MarqueeComponent {
-  readonly words = ["Excellence", "Discipline", "Héritage", "Victoire", "Sang & Or", "1919"];
+  readonly words = [
+    { key: 'home.marquee.excellence' },
+    { key: 'home.marquee.discipline' },
+    { key: 'home.marquee.heritage' },
+    { key: 'home.marquee.victoire' },
+    { key: 'home.marquee.sangOr' },
+    { text: '1919' },
+  ];
   readonly loop = [...this.words, ...this.words, ...this.words, ...this.words];
 }

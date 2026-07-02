@@ -7,6 +7,7 @@ import { ApiService } from '../../../../core/services/api.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { PageLayoutComponent } from '../../../../shared/components/page-layout/page-layout.component';
 import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
+import { TranslationService } from '../../../../core/i18n/translation.service';
 
 const S2F: Record<string,string> = { PLANIFIEE:'upcoming',EN_COURS:'ongoing',TERMINEE:'finished',ANNULEE:'cancelled' };
 
@@ -16,12 +17,12 @@ const S2F: Record<string,string> = { PLANIFIEE:'upcoming',EN_COURS:'ongoing',TER
     <app-page-layout>
       <section class="mx-auto max-w-[1400px] px-6 lg:px-10 py-16">
         <a routerLink="/competitions" class="inline-flex items-center gap-2 text-white/50 hover:text-white text-sm mb-12 transition-colors">
-          ← Retour aux compétitions
+          <span class="rtl-flip">←</span> {{ 'competitions.detail.back' | translate }}
         </a>
         @if (loading()) {
-          <div class="text-white/40 text-center py-20">Chargement…</div>
+          <div class="text-white/40 text-center py-20">{{ 'common.loading' | translate }}</div>
         } @else if (!comp()) {
-          <div class="text-white/40 text-center py-20">Compétition introuvable.</div>
+          <div class="text-white/40 text-center py-20">{{ 'competitions.detail.notFound' | translate }}</div>
         } @else {
           <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-12">
             <div>
@@ -35,7 +36,7 @@ const S2F: Record<string,string> = { PLANIFIEE:'upcoming',EN_COURS:'ongoing',TER
             @if (auth.hasRole('ADMIN') || auth.hasRole('COACH')) {
               <button (click)="formOpen.set(true)"
                 class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/20 hover:border-white text-sm transition-colors">
-                <lucide-icon [img]="Pencil" class="w-4 h-4"></lucide-icon> Modifier
+                <lucide-icon [img]="Pencil" class="w-4 h-4"></lucide-icon> {{ 'competitions.detail.edit' | translate }}
               </button>
             }
           </div>
@@ -51,22 +52,22 @@ const S2F: Record<string,string> = { PLANIFIEE:'upcoming',EN_COURS:'ongoing',TER
 
           <div class="border-t border-white/10 pt-10">
             <div class="flex items-center justify-between mb-8">
-              <h2 class="font-serif text-3xl">Épreuves</h2>
+              <h2 class="font-serif text-3xl">{{ 'competitions.detail.eventsTitle' | translate }}</h2>
               @if (auth.hasRole('ADMIN') || auth.hasRole('COACH')) {
-                <a [routerLink]="['/competitions', id, 'events', 'new']"
+                <button (click)="eventFormOpen.set(true)"
                   class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent text-white text-sm hover:bg-white hover:text-black transition-colors">
-                  + Ajouter
-                </a>
+                  {{ 'competitions.detail.addEvent' | translate }}
+                </button>
               }
             </div>
             @if (events().length === 0) {
-              <div class="text-white/40 py-10">Aucune épreuve.</div>
+              <div class="text-white/40 py-10">{{ 'competitions.detail.noEvents' | translate }}</div>
             } @else {
               <div class="border-t border-white/10">
                 @for (ev of events(); track ev.id) {
                   <div class="grid grid-cols-12 items-center py-4 border-b border-white/10 hover:bg-white/[0.02] px-2">
                     <div class="col-span-5 font-medium">{{ ev.label || (ev.distance + 'm ' + ev.swimStyle) }}</div>
-                    <div class="col-span-3 text-sm text-white/50">{{ ev.gender==='M' ? 'Messieurs' : 'Dames' }}</div>
+                    <div class="col-span-3 text-sm text-white/50">{{ (ev.gender==='M' ? 'competitions.detail.genderMale' : 'competitions.detail.genderFemale') | translate }}</div>
                     <div class="col-span-2 text-sm text-white/50">{{ ev.ageCategory }}</div>
                     <div class="col-span-2"><app-status-badge [status]="S2F[ev.status] ?? ev.status" /></div>
                   </div>
@@ -78,8 +79,14 @@ const S2F: Record<string,string> = { PLANIFIEE:'upcoming',EN_COURS:'ongoing',TER
       </section>
     </app-page-layout>
 
-    <app-modal [open]="formOpen()" title="Modifier la compétition" (closed)="formOpen.set(false)">
+    <app-modal [open]="formOpen()" [title]="'competitions.detail.editModalTitle' | translate" (closed)="formOpen.set(false)">
       <app-competition-form [id]="id" (saved)="onFormSaved()"></app-competition-form>
+    </app-modal>
+
+    <app-modal [open]="eventFormOpen()" [title]="'competitions.detail.addEventModalTitle' | translate" (closed)="eventFormOpen.set(false)">
+      @if (eventFormOpen()) {
+        <app-event-form [compId]="id" (saved)="onEventSaved()" (cancelled)="eventFormOpen.set(false)"></app-event-form>
+      }
     </app-modal>
   `
 })
@@ -93,10 +100,11 @@ export class CompetitionDetailComponent implements OnInit {
   readonly events = signal<any[]>([]);
   readonly loading = signal(true);
   readonly formOpen = signal(false);
+  readonly eventFormOpen = signal(false);
   id = '';
   readonly S2F = S2F;
 
-  constructor(private api: ApiService, private route: ActivatedRoute, readonly auth: AuthService) {}
+  constructor(private api: ApiService, private route: ActivatedRoute, readonly auth: AuthService, private i18n: TranslationService) {}
 
   ngOnInit(): void {
     this.id = this.route.snapshot.paramMap.get('id') ?? '';
@@ -119,21 +127,23 @@ export class CompetitionDetailComponent implements OnInit {
   }
 
   onFormSaved(): void { this.formOpen.set(false); this.load(); }
+  onEventSaved(): void { this.eventFormOpen.set(false); this.load(); }
 
   infos() {
     const c = this.comp();
     return [
-      { label:'Discipline', value: c.discipline },
-      { label:'Bassin', value: c.lane || '—' },
-      { label:'Ville', value: c.city || '—' },
-      { label:'Piscine', value: c.poolName || '—' },
-      { label:'Catégories', value: c.ageCategories || '—' },
-      { label:'Inscription avant', value: this.fmtDate(c.registrationDeadline) },
+      { label: this.i18n.t('competitions.detail.info.discipline'), value: c.type || '—' },
+      { label: this.i18n.t('competitions.detail.info.lane'), value: c.lane || '—' },
+      { label: this.i18n.t('competitions.detail.info.city'), value: c.poolVille || '—' },
+      { label: this.i18n.t('competitions.detail.info.pool'), value: c.poolNom || '—' },
+      { label: this.i18n.t('competitions.detail.info.ageCategories'), value: c.ageCategories || '—' },
+      { label: this.i18n.t('competitions.detail.info.registrationDeadline'), value: this.fmtDate(c.registrationDeadline) },
     ];
   }
 
   fmtDate(d?: string): string {
     if (!d) return '—';
-    return new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' });
+    const locale = this.i18n.locale() === 'en' ? 'en-GB' : this.i18n.locale() === 'ar' ? 'ar-TN' : 'fr-FR';
+    return new Date(d).toLocaleDateString(locale, { day:'2-digit', month:'long', year:'numeric' });
   }
 }

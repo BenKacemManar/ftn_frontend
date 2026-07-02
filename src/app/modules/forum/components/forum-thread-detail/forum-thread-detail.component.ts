@@ -20,11 +20,11 @@ const REACTIONS = [
   template: `
     <app-page-layout>
       <section class="mx-auto max-w-[900px] px-6 lg:px-10 py-16">
-        <a [routerLink]="['/forum', thread()?.forumId]" class="inline-flex items-center gap-2 text-white/50 hover:text-white text-sm mb-12 transition-colors">← Retour</a>
+        <a [routerLink]="['/forum', thread()?.forumId]" class="inline-flex items-center gap-2 text-white/50 hover:text-white text-sm mb-12 transition-colors"><span class="rtl-flip">←</span> {{ 'forum.backLabel' | translate }}</a>
         @if (loading()) {
-          <div class="text-white/40 text-center py-20">Chargement…</div>
+          <div class="text-white/40 text-center py-20">{{ 'common.loading' | translate }}</div>
         } @else if (!thread()) {
-          <div class="text-white/40 text-center py-20">Sujet introuvable.</div>
+          <div class="text-white/40 text-center py-20">{{ 'forum.notFound' | translate }}</div>
         } @else {
           <h1 class="font-serif text-3xl lg:text-5xl mb-4">{{ thread().titre }}</h1>
           <div class="flex items-center gap-4 text-xs text-white/40 mb-10 pb-8 border-b border-white/10">
@@ -32,7 +32,7 @@ const REACTIONS = [
             <span>·</span>
             <span>{{ fmtDate(thread().dateCreation) }}</span>
             <span>·</span>
-            <span>{{ thread().nbVues }} vues · {{ thread().nbReponses }} réponses</span>
+            <span>{{ thread().nbVues }} {{ 'forum.views' | translate }} · {{ thread().nbReponses }} {{ 'forum.repliesCount' | translate }}</span>
           </div>
           <div class="mb-4 p-6 border border-white/10 rounded-lg">
             <p class="text-white/80 leading-relaxed whitespace-pre-wrap">{{ thread().contenu }}</p>
@@ -51,7 +51,7 @@ const REACTIONS = [
             }
           </div>
 
-          <h2 class="font-serif text-2xl mb-6">Réponses <span class="text-gold">({{ posts().length }})</span></h2>
+          <h2 class="font-serif text-2xl mb-6">{{ 'forum.replies.heading' | translate }} <span class="text-gold">({{ posts().length }})</span></h2>
           <div class="space-y-4 mb-12">
             @for (post of posts(); track post.id) {
               <div class="p-5 border border-white/10 rounded-lg">
@@ -86,22 +86,22 @@ const REACTIONS = [
 
           @if (auth.isLoggedIn() && !thread().ferme) {
             <form (ngSubmit)="submitReply()" class="border-t border-white/10 pt-8">
-              <h3 class="font-serif text-xl mb-4">Votre réponse</h3>
-              <textarea [(ngModel)]="reply" name="reply" rows="4" required placeholder="Écrivez votre réponse…"
+              <h3 class="font-serif text-xl mb-4">{{ 'forum.replies.formHeading' | translate }}</h3>
+              <textarea [(ngModel)]="reply" name="reply" rows="4" required [placeholder]="'forum.replies.placeholder' | translate"
                 class="block w-full bg-transparent border border-white/20 focus:border-white rounded-lg px-4 py-3 outline-none resize-none transition-colors placeholder:text-white/30 mb-4"></textarea>
-              <input [(ngModel)]="replyImageUrl" name="replyImage" placeholder="URL d'image (optionnel)"
+              <input [(ngModel)]="replyImageUrl" name="replyImage" [placeholder]="'forum.replies.imageUrlLabel' | translate"
                 class="block w-full bg-transparent border-b border-white/20 focus:border-white pb-3 outline-none transition-colors mb-4 text-sm"/>
               <div class="flex items-center gap-3">
                 <app-emoji-picker (picked)="reply = reply + $event"></app-emoji-picker>
                 <button type="submit" [disabled]="posting() || !reply.trim()"
                   class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black hover:bg-accent hover:text-white transition-colors text-sm disabled:opacity-50">
-                  {{ posting() ? 'Envoi…' : 'Répondre' }} →
+                  {{ posting() ? ('forum.replies.sending' | translate) : ('forum.replies.submit' | translate) }} <span class="rtl-flip">→</span>
                 </button>
               </div>
             </form>
           } @else if (!auth.isLoggedIn()) {
             <div class="border-t border-white/10 pt-8 text-center text-white/40">
-              <a routerLink="/auth/login" class="text-gold hover:underline">Connectez-vous</a> pour répondre.
+              <a routerLink="/auth/login" class="text-gold hover:underline">{{ 'forum.replies.loginPrompt' | translate }}</a> {{ 'forum.replies.loginSuffix' | translate }}
             </div>
           }
         }

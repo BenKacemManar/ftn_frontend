@@ -13,7 +13,7 @@ import { Eye, MessageCircle } from 'lucide-angular';
   template: `
     <app-page-layout>
       <section class="mx-auto max-w-[1400px] px-6 lg:px-10 py-16">
-        <a routerLink="/forum" class="inline-flex items-center gap-2 text-white/50 hover:text-white text-sm mb-12 transition-colors">← Retour au forum</a>
+        <a routerLink="/forum" class="inline-flex items-center gap-2 text-white/50 hover:text-white text-sm mb-12 transition-colors"><span class="rtl-flip">←</span> {{ 'forum.backToForumLabel' | translate }}</a>
         <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-12">
           <div>
             <h1 class="font-serif text-4xl lg:text-5xl">{{ category()?.nom }}</h1>
@@ -22,27 +22,27 @@ import { Eye, MessageCircle } from 'lucide-angular';
           @if (auth.isLoggedIn()) {
             <button (click)="showForm.set(!showForm())"
               class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent text-white text-sm hover:bg-white hover:text-black transition-colors">
-              + Nouveau sujet
+              {{ 'forum.newThread.cta' | translate }}
             </button>
           }
         </div>
 
         @if (showForm()) {
           <form (ngSubmit)="createThread()" class="mb-10 p-6 border border-white/10 rounded-lg">
-            <h3 class="font-serif text-xl mb-6">Nouveau sujet</h3>
+            <h3 class="font-serif text-xl mb-6">{{ 'forum.newThread.heading' | translate }}</h3>
             <div class="space-y-6">
               <div class="relative">
-                <span class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Titre</span>
+                <span class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">{{ 'forum.newThread.titleLabel' | translate }}</span>
                 <input [(ngModel)]="newTitle" name="title" required
                   class="block w-full bg-transparent border-b border-white/20 focus:border-white pb-3 outline-none transition-colors"/>
               </div>
               <div>
-                <span class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Contenu</span>
+                <span class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">{{ 'forum.newThread.contentLabel' | translate }}</span>
                 <textarea [(ngModel)]="newContent" name="content" rows="5" required
                   class="block w-full bg-transparent border border-white/20 focus:border-white rounded-lg px-4 py-3 outline-none resize-none transition-colors"></textarea>
               </div>
               <div>
-                <span class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">URL d'image (optionnel)</span>
+                <span class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">{{ 'forum.newThread.imageUrlLabel' | translate }}</span>
                 <input [(ngModel)]="newImageUrl" name="imageUrl"
                   class="block w-full bg-transparent border-b border-white/20 focus:border-white pb-3 outline-none transition-colors"/>
               </div>
@@ -50,19 +50,19 @@ import { Eye, MessageCircle } from 'lucide-angular';
                 <app-emoji-picker (picked)="newContent = newContent + $event"></app-emoji-picker>
                 <button type="submit" [disabled]="creating()"
                   class="px-6 py-3 rounded-full bg-white text-black hover:bg-accent hover:text-white transition-colors text-sm disabled:opacity-50">
-                  {{ creating() ? '…' : 'Créer' }}
+                  {{ creating() ? '…' : ('forum.newThread.create' | translate) }}
                 </button>
                 <button type="button" (click)="showForm.set(false)"
-                  class="px-6 py-3 rounded-full border border-white/20 hover:border-white text-sm transition-colors">Annuler</button>
+                  class="px-6 py-3 rounded-full border border-white/20 hover:border-white text-sm transition-colors">{{ 'forum.newThread.cancel' | translate }}</button>
               </div>
             </div>
           </form>
         }
 
         @if (loading()) {
-          <div class="text-white/40 text-center py-20">Chargement…</div>
+          <div class="text-white/40 text-center py-20">{{ 'common.loading' | translate }}</div>
         } @else if (threads().length === 0) {
-          <div class="text-white/40 text-center py-20">Aucun sujet.</div>
+          <div class="text-white/40 text-center py-20">{{ 'forum.empty' | translate }}</div>
         } @else {
           <div class="border-t border-white/10">
             @for (t of threads(); track t.id) {
@@ -78,7 +78,7 @@ import { Eye, MessageCircle } from 'lucide-angular';
                 </div>
                 <div class="col-span-3 lg:col-span-2 flex justify-end">
                   <a [routerLink]="['/forum', forumId, t.id]"
-                    class="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-accent group-hover:border-accent transition-colors text-sm">→</a>
+                    class="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-accent group-hover:border-accent transition-colors text-sm"><span class="rtl-flip">→</span></a>
                 </div>
               </div>
             }

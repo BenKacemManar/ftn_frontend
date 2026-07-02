@@ -19,12 +19,12 @@ interface Row {
             <div class="flex items-center gap-4">
               <span class="text-xs tracking-[0.3em] uppercase text-white/40">04</span>
               <span class="h-px w-10 bg-accent"></span>
-              <span class="text-xs tracking-[0.3em] uppercase text-white/70">Palmarès</span>
+              <span class="text-xs tracking-[0.3em] uppercase text-white/70">{{ 'home.palmares.kicker' | translate }}</span>
             </div>
             <h2 class="font-serif text-5xl lg:text-7xl leading-[0.95] mt-8">
-              Cinq saisons. <br />
-              <span class="italic">Une obsession :</span> <br />
-              <span class="text-accent">gagner.</span>
+              {{ 'home.palmares.titleLine1' | translate }} <br />
+              <span class="italic">{{ 'home.palmares.titleItalic' | translate }}</span> <br />
+              <span class="text-accent">{{ 'home.palmares.titleWord' | translate }}</span>
             </h2>
           </div>
           <lucide-icon [img]="Trophy" class="w-16 h-16 text-white/20"></lucide-icon>
@@ -49,7 +49,7 @@ interface Row {
             </div>
           }
           @if (rows().length === 0) {
-            <div class="text-white/40 text-center py-16">Aucun palmarès disponible.</div>
+            <div class="text-white/40 text-center py-16">{{ 'home.palmares.empty' | translate }}</div>
           }
         </div>
       </div>

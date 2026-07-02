@@ -1,0 +1,36 @@
+export const forum_fr = {
+  forum: {
+    home: {
+      kicker: 'Forum',
+      titleLine1: 'Discussions',
+      titleItalic: '& échanges.',
+      empty: 'Aucune catégorie de forum.',
+      topicsCount: '{{count}} sujets',
+    },
+    backToForumLabel: 'Retour au forum',
+    backLabel: 'Retour',
+    newThread: {
+      cta: '+ Nouveau sujet',
+      heading: 'Nouveau sujet',
+      titleLabel: 'Titre',
+      contentLabel: 'Contenu',
+      imageUrlLabel: "URL d'image (optionnel)",
+      create: 'Créer',
+      cancel: 'Annuler',
+    },
+    empty: 'Aucun sujet.',
+    notFound: 'Sujet introuvable.',
+    views: 'vues',
+    repliesCount: 'réponses',
+    replies: {
+      heading: 'Réponses',
+      formHeading: 'Votre réponse',
+      placeholder: 'Écrivez votre réponse…',
+      imageUrlLabel: "URL d'image (optionnel)",
+      sending: 'Envoi…',
+      submit: 'Répondre',
+      loginPrompt: 'Connectez-vous',
+      loginSuffix: 'pour répondre.',
+    },
+  },
+};

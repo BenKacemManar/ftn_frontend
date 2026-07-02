@@ -1,0 +1,31 @@
+.schedule-inner {
+  display: flex;
+  flex-direction: column;
+}
+
+.schedule-row {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+  &--header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
+
+.lane-label {
+  width: 96px;
+  flex-shrink: 0;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.timeline {
+  flex: 1;
+  overflow: visible;
+}

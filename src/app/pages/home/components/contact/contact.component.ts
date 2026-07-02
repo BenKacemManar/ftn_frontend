@@ -12,11 +12,11 @@ import { RevealDirective } from "../../../../shared/reveal.directive";
           <div class="flex items-center gap-4">
             <span class="text-xs tracking-[0.3em] uppercase text-white/40">05</span>
             <span class="h-px w-10 bg-accent"></span>
-            <span class="text-xs tracking-[0.3em] uppercase text-white/70">Contact</span>
+            <span class="text-xs tracking-[0.3em] uppercase text-white/70">{{ 'home.contact.kicker' | translate }}</span>
           </div>
           <h2 class="font-serif text-5xl lg:text-7xl leading-[0.95] mt-8 mb-10">
-            Plongez <br />
-            <span class="italic text-gold">avec nous.</span>
+            {{ 'home.contact.titleLine1' | translate }} <br />
+            <span class="italic text-gold">{{ 'home.contact.titleItalic' | translate }}</span>
           </h2>
 
           <div class="space-y-6 text-white/70">
@@ -25,7 +25,7 @@ import { RevealDirective } from "../../../../shared/reveal.directive";
                 <lucide-icon [img]="Phone" class="w-4 h-4"></lucide-icon>
               </span>
               <div>
-                <div class="text-[11px] tracking-[0.3em] uppercase text-white/40">Téléphone</div>
+                <div class="text-[11px] tracking-[0.3em] uppercase text-white/40">{{ 'common.phone' | translate }}</div>
                 <div class="text-lg mt-1">+216 71 234 567</div>
               </div>
             </div>
@@ -34,7 +34,7 @@ import { RevealDirective } from "../../../../shared/reveal.directive";
                 <lucide-icon [img]="Mail" class="w-4 h-4"></lucide-icon>
               </span>
               <div>
-                <div class="text-[11px] tracking-[0.3em] uppercase text-white/40">Email</div>
+                <div class="text-[11px] tracking-[0.3em] uppercase text-white/40">{{ 'common.email' | translate }}</div>
                 <div class="text-lg mt-1">natation&#64;est.org.tn</div>
               </div>
             </div>
@@ -43,7 +43,7 @@ import { RevealDirective } from "../../../../shared/reveal.directive";
                 <lucide-icon [img]="MapPin" class="w-4 h-4"></lucide-icon>
               </span>
               <div>
-                <div class="text-[11px] tracking-[0.3em] uppercase text-white/40">Adresse</div>
+                <div class="text-[11px] tracking-[0.3em] uppercase text-white/40">{{ 'common.address' | translate }}</div>
                 <div class="text-lg mt-1">Complexe El Menzah, Tunis</div>
               </div>
             </div>
@@ -69,36 +69,36 @@ import { RevealDirective } from "../../../../shared/reveal.directive";
           (ngSubmit)="onSubmit()"
         >
           <label class="relative block col-span-2 md:col-span-1">
-            <span class="absolute left-0 top-0 text-[10px] tracking-[0.3em] uppercase text-white/50">Nom complet</span>
+            <span class="absolute left-0 top-0 text-[10px] tracking-[0.3em] uppercase text-white/50">{{ 'home.contact.fullName' | translate }}</span>
             <input [(ngModel)]="form.name" name="name" type="text"
               class="block w-full bg-transparent border-b border-white/20 focus:border-white pt-6 pb-3 outline-none transition-colors" />
           </label>
           <label class="relative block col-span-2 md:col-span-1">
-            <span class="absolute left-0 top-0 text-[10px] tracking-[0.3em] uppercase text-white/50">Email</span>
+            <span class="absolute left-0 top-0 text-[10px] tracking-[0.3em] uppercase text-white/50">{{ 'common.email' | translate }}</span>
             <input [(ngModel)]="form.email" name="email" type="email"
               class="block w-full bg-transparent border-b border-white/20 focus:border-white pt-6 pb-3 outline-none transition-colors" />
           </label>
           <label class="relative block col-span-2 md:col-span-1">
-            <span class="absolute left-0 top-0 text-[10px] tracking-[0.3em] uppercase text-white/50">Téléphone</span>
+            <span class="absolute left-0 top-0 text-[10px] tracking-[0.3em] uppercase text-white/50">{{ 'common.phone' | translate }}</span>
             <input [(ngModel)]="form.phone" name="phone" type="tel"
               class="block w-full bg-transparent border-b border-white/20 focus:border-white pt-6 pb-3 outline-none transition-colors" />
           </label>
           <label class="relative block col-span-2 md:col-span-1">
-            <span class="absolute left-0 top-0 text-[10px] tracking-[0.3em] uppercase text-white/50">Programme souhaité</span>
+            <span class="absolute left-0 top-0 text-[10px] tracking-[0.3em] uppercase text-white/50">{{ 'home.contact.programWanted' | translate }}</span>
             <input [(ngModel)]="form.program" name="program" type="text"
               class="block w-full bg-transparent border-b border-white/20 focus:border-white pt-6 pb-3 outline-none transition-colors" />
           </label>
           <label class="relative block col-span-2">
-            <span class="absolute left-0 top-0 text-[10px] tracking-[0.3em] uppercase text-white/50">Votre message</span>
+            <span class="absolute left-0 top-0 text-[10px] tracking-[0.3em] uppercase text-white/50">{{ 'home.contact.message' | translate }}</span>
             <textarea [(ngModel)]="form.message" name="message" rows="4"
               class="block w-full bg-transparent border-b border-white/20 focus:border-white pt-6 pb-3 outline-none resize-none transition-colors"></textarea>
           </label>
           <div class="col-span-2 flex items-center justify-between pt-4">
-            <p class="text-xs tracking-[0.2em] uppercase text-white/40">Réponse sous 48h</p>
+            <p class="text-xs tracking-[0.2em] uppercase text-white/40">{{ 'home.contact.responseTime' | translate }}</p>
             <button type="submit"
               class="group inline-flex items-center gap-3 px-8 py-4 bg-white text-black hover:bg-accent hover:text-white rounded-full transition-colors">
-              Envoyer
-              <lucide-icon [img]="ArrowUpRight" class="w-4 h-4 transition-transform group-hover:rotate-45"></lucide-icon>
+              {{ 'home.contact.send' | translate }}
+              <lucide-icon [img]="ArrowUpRight" class="w-4 h-4 transition-transform group-hover:rotate-45 rtl-flip"></lucide-icon>
             </button>
           </div>
         </form>

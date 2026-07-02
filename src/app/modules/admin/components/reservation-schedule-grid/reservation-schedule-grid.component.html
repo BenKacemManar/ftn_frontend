@@ -1,0 +1,212 @@
+<app-admin-layout>
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="font-serif text-3xl">Planning des réservations</h1>
+    <div *ngIf="allReservations.length > 0" class="flex gap-2">
+      <button
+        (click)="exportService.exportCsv(allReservations, 'planning-' + selectedDate + '.csv')"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/20 text-sm hover:border-white/40 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        CSV
+      </button>
+      <button
+        (click)="exportPdf()"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/20 text-sm hover:border-white/40 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13h6M9 17h3"/></svg>
+        PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="flex flex-wrap items-center gap-4 mb-6">
+    <!-- Pool dropdown -->
+    <div class="relative" (click)="$event.stopPropagation()">
+      <button type="button" (click)="togglePoolDropdown()"
+        class="inline-flex items-center gap-3 px-4 py-2.5 rounded-full border border-white/20 text-sm hover:border-white/40 transition-colors min-w-[220px]">
+        <span class="flex-1 text-left">{{ selectedPool ? (selectedPool.nom + ' — ' + selectedPool.ville) : 'Sélectionner une piscine' }}</span>
+        <span class="text-white/40 text-xs">{{ poolDropdownOpen ? '▲' : '▼' }}</span>
+      </button>
+      <ul *ngIf="poolDropdownOpen"
+        class="absolute left-0 top-full mt-1 w-full bg-[#1a0000] border border-white/10 rounded-lg overflow-hidden shadow-xl z-50">
+        <li *ngFor="let p of pools"
+          (click)="selectPool(p.id)"
+          class="px-4 py-3 text-sm cursor-pointer hover:bg-white/5 transition-colors"
+          [class.text-accent]="p.id === selectedPoolId">
+          {{ p.nom }} — {{ p.ville }}
+        </li>
+      </ul>
+    </div>
+
+    <!-- Date nav -->
+    <div class="flex items-center gap-2">
+      <button type="button" (click)="shiftDate(-1)"
+        class="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center hover:border-white/40 transition-colors text-sm">‹</button>
+      <input type="date" [(ngModel)]="selectedDate" (ngModelChange)="onDateChange()"
+        class="bg-white/5 border border-white/10 rounded-full px-4 py-2 text-sm text-white outline-none" [style.colorScheme]="'dark'"/>
+      <button type="button" (click)="shiftDate(1)"
+        class="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center hover:border-white/40 transition-colors text-sm">›</button>
+    </div>
+
+    <button type="button" (click)="goToday()"
+      class="px-4 py-2 rounded-full border border-white/20 text-sm hover:border-white/40 transition-colors">
+      Aujourd'hui
+    </button>
+  </div>
+
+  <p class="text-white/40 text-sm mb-6 capitalize">{{ formattedSelectedDate }}</p>
+
+  <!-- Legend -->
+  <div class="flex items-center gap-6 mb-6 text-xs text-white/50">
+    <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm bg-green-500/30 border border-green-500/40"></span> Confirmée</span>
+    <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm bg-accent/20 border border-accent/30"></span> En attente</span>
+    <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm bg-white/5 border border-white/10"></span> Libre</span>
+  </div>
+
+  <div *ngIf="error" class="text-accent text-sm mb-4">{{ error }}</div>
+  <div *ngIf="loading" class="text-white/40 text-center py-12">Chargement…</div>
+
+  <div *ngIf="!loading && !error" class="overflow-x-auto rounded-xl border border-white/10">
+    <div class="schedule-inner" [style.minWidth.px]="timelineWidthPx + 120">
+
+      <!-- Hour header -->
+      <div class="schedule-row schedule-row--header">
+        <div class="lane-label"></div>
+        <div class="timeline" [style.width.px]="timelineWidthPx" style="position:relative;height:28px">
+          <span *ngFor="let mark of hourMarks" class="hour-tick"
+            [style.left.px]="mark.leftPx" style="position:absolute;top:6px;font-size:10px;color:rgba(255,255,255,0.3);transform:translateX(-50%)">
+            {{ mark.hour }}:00
+          </span>
+          <div *ngIf="nowLinePx !== null" class="now-line" [style.left.px]="nowLinePx"
+            style="position:absolute;top:0;bottom:0;width:2px;background:#E10600;opacity:0.7"></div>
+        </div>
+      </div>
+
+      <!-- Lane rows -->
+      <div *ngFor="let lane of laneNumbers" class="schedule-row">
+        <div class="lane-label">Couloir {{ lane }}</div>
+        <div class="timeline" [style.width.px]="timelineWidthPx" style="position:relative;height:44px;background:rgba(255,255,255,0.01)">
+          <div *ngFor="let mark of hourMarks" style="position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.05)"
+            [style.left.px]="mark.leftPx"></div>
+          <div *ngIf="nowLinePx !== null" [style.left.px]="nowLinePx"
+            style="position:absolute;top:0;bottom:0;width:2px;background:#E10600;opacity:0.5"></div>
+
+          <ng-container *ngIf="laneBlocks[lane] as block; else laneFree">
+            <div class="event-block event-block--confirmed"
+              [style.left.px]="leftFor(block)"
+              [style.width.px]="widthFor(block)"
+              [title]="tooltipFor(block.reservation)"
+              style="position:absolute;top:4px;bottom:4px;border-radius:4px;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);padding:2px 6px;overflow:hidden;cursor:default">
+              <span style="font-size:10px;color:#86efac;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                {{ formatTime(block.reservation.heureDebut) }}–{{ formatTime(block.reservation.heureFin) }}
+              </span>
+              <span style="font-size:10px;color:rgba(255,255,255,0.6);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                {{ whoLabel(block.reservation) }}
+              </span>
+            </div>
+          </ng-container>
+          <ng-template #laneFree>
+            <span style="position:absolute;top:50%;transform:translateY(-50%);left:8px;font-size:10px;color:rgba(255,255,255,0.15)">Libre</span>
+          </ng-template>
+        </div>
+      </div>
+
+      <!-- Pending section -->
+      <div *ngIf="pendingRows.length">
+        <div style="padding:8px 8px 4px;font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:0.15em;text-transform:uppercase;border-top:1px solid rgba(255,255,255,0.06)">
+          En attente — couloir non attribué
+        </div>
+        <div *ngFor="let row of pendingRows" class="schedule-row">
+          <div class="lane-label" style="color:rgba(255,255,255,0.2)">—</div>
+          <div class="timeline" [style.width.px]="timelineWidthPx" style="position:relative;height:52px">
+            <div *ngFor="let mark of hourMarks" style="position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.05)"
+              [style.left.px]="mark.leftPx"></div>
+            <div *ngIf="nowLinePx !== null" [style.left.px]="nowLinePx"
+              style="position:absolute;top:0;bottom:0;width:2px;background:#E10600;opacity:0.5"></div>
+
+            <div *ngFor="let block of row.blocks" class="event-block event-block--pending"
+              [style.left.px]="leftFor(block)"
+              [style.width.px]="widthFor(block)"
+              [title]="tooltipFor(block.reservation)"
+              style="position:absolute;top:4px;bottom:4px;border-radius:4px;background:rgba(225,6,0,0.12);border:1px solid rgba(225,6,0,0.25);padding:2px 6px;overflow:hidden;cursor:default">
+              <span style="font-size:10px;color:#fca5a5;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                {{ formatTime(block.reservation.heureDebut) }}–{{ formatTime(block.reservation.heureFin) }}
+              </span>
+              <span style="font-size:10px;color:rgba(255,255,255,0.5);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                {{ whoLabel(block.reservation) }} ({{ block.reservation.nbCouloirs }} coul.)
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Pending reservations management table — ALL dates -->
+  <div class="mt-10">
+    <h2 class="font-serif text-xl mb-2">Demandes en attente</h2>
+    <p class="text-xs text-white/40 mb-6">Toutes les piscines · toutes les dates</p>
+
+    <div *ngIf="!loading && allPending.length === 0"
+      class="border border-white/10 rounded-xl px-6 py-12 text-center text-white/30 text-sm">
+      Aucune demande en attente pour le moment.
+    </div>
+
+    <div *ngIf="!loading && allPending.length > 0" class="border border-white/10 rounded-xl overflow-hidden">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-white/10 bg-white/[0.02]">
+            <th class="text-left text-xs tracking-[0.2em] uppercase text-white/40 px-4 py-3">Demandeur</th>
+            <th class="text-left text-xs tracking-[0.2em] uppercase text-white/40 px-4 py-3 hidden lg:table-cell">Type</th>
+            <th class="text-left text-xs tracking-[0.2em] uppercase text-white/40 px-4 py-3">Date</th>
+            <th class="text-left text-xs tracking-[0.2em] uppercase text-white/40 px-4 py-3">Horaire</th>
+            <th class="text-left text-xs tracking-[0.2em] uppercase text-white/40 px-4 py-3">Coul. dem.</th>
+            <th class="text-left text-xs tracking-[0.2em] uppercase text-white/40 px-4 py-3">Attribuer couloir(s)</th>
+            <th class="text-left text-xs tracking-[0.2em] uppercase text-white/40 px-4 py-3">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of allPending" class="border-b border-white/5 hover:bg-white/[0.02]">
+            <td class="px-4 py-3">
+              <div class="font-medium">{{ whoLabel(r) }}</div>
+              <div class="text-xs text-white/40">{{ r.reserveePar }}</div>
+            </td>
+            <td class="px-4 py-3 text-white/60 hidden lg:table-cell">
+              {{ r.typeReservation === 'CLUB' ? 'Club' : 'Athlète' }}
+            </td>
+            <td class="px-4 py-3 text-white/60 whitespace-nowrap">
+              {{ formatDate(r.date) }}
+            </td>
+            <td class="px-4 py-3 text-white/60 whitespace-nowrap">
+              {{ formatTime(r.heureDebut) }} → {{ formatTime(r.heureFin) }}
+            </td>
+            <td class="px-4 py-3 text-white/60">{{ r.nbCouloirs }}</td>
+            <td class="px-4 py-3">
+              <input type="text"
+                [(ngModel)]="laneInputs[r.id]"
+                [placeholder]="r.nbCouloirs === 1 ? 'ex: 3' : 'ex: 1,2'"
+                class="w-28 bg-white/5 border border-white/15 rounded-lg px-3 py-1.5 text-xs outline-none focus:border-white/40 transition-colors text-white placeholder-white/20"/>
+            </td>
+            <td class="px-4 py-3">
+              <div class="flex gap-2">
+                <button (click)="approveFromTable(r)"
+                  class="px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs hover:bg-green-500/20 transition-colors whitespace-nowrap">
+                  ✓ Confirmer
+                </button>
+                <button (click)="deny(r)"
+                  class="px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-accent text-xs hover:bg-accent/20 transition-colors whitespace-nowrap">
+                  ✕ Refuser
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && !error && laneNumbers.length === 0" class="text-white/40 text-center py-16">
+    Sélectionnez une piscine pour afficher son planning.
+  </div>
+
+</app-admin-layout>

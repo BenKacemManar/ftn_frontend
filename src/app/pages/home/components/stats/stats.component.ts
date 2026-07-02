@@ -4,7 +4,7 @@ import { ApiService } from "../../../../core/services/api.service";
 
 interface Stat {
   value: number;
-  label: string;
+  labelKey: string;
   suffix: string;
 }
 
@@ -12,7 +12,7 @@ interface Stat {
   selector: "app-stats",
   template: `
     <section class="mx-auto max-w-[1400px] px-6 lg:px-10 py-24 grid grid-cols-2 lg:grid-cols-4 gap-y-12">
-      @for (it of items; track it.label; let i = $index) {
+      @for (it of items; track it.labelKey; let i = $index) {
         <div class="border-l-2 pl-6 reveal border-blood-gold"
           [style.animationDelay]="(i * 0.6) + 's'">
           <span
@@ -21,7 +21,7 @@ interface Stat {
             [appCounter]="it.value"
             [counterSuffix]="it.suffix"
           ></span>
-          <div class="mt-3 text-xs tracking-[0.2em] uppercase text-white/50">{{ it.label }}</div>
+          <div class="mt-3 text-xs tracking-[0.2em] uppercase text-white/50">{{ it.labelKey | translate }}</div>
         </div>
       }
     </section>
@@ -29,10 +29,10 @@ interface Stat {
 })
 export class StatsComponent implements OnInit {
   items: Stat[] = [
-    { value: 0, label: "Athlètes licenciés", suffix: "+" },
-    { value: 0, label: "Clubs affiliés", suffix: "" },
-    { value: 0, label: "Compétitions organisées", suffix: "" },
-    { value: 0, label: "Licences délivrées", suffix: "" },
+    { value: 0, labelKey: "home.stats.athletes", suffix: "+" },
+    { value: 0, labelKey: "home.stats.clubs", suffix: "" },
+    { value: 0, labelKey: "home.stats.competitions", suffix: "" },
+    { value: 0, labelKey: "home.stats.licences", suffix: "" },
   ];
 
   constructor(private api: ApiService) {}
@@ -42,10 +42,10 @@ export class StatsComponent implements OnInit {
       next: r => {
         const s = r?.data ?? r;
         this.items = [
-          { value: s?.nbAthletes ?? 0, label: "Athlètes licenciés", suffix: "+" },
-          { value: s?.nbClubs ?? 0, label: "Clubs affiliés", suffix: "" },
-          { value: s?.nbCompetitions ?? 0, label: "Compétitions organisées", suffix: "" },
-          { value: s?.nbLicences ?? 0, label: "Licences délivrées", suffix: "" },
+          { value: s?.nbAthletes ?? 0, labelKey: "home.stats.athletes", suffix: "+" },
+          { value: s?.nbClubs ?? 0, labelKey: "home.stats.clubs", suffix: "" },
+          { value: s?.nbCompetitions ?? 0, labelKey: "home.stats.competitions", suffix: "" },
+          { value: s?.nbLicences ?? 0, labelKey: "home.stats.licences", suffix: "" },
         ];
       }
     });

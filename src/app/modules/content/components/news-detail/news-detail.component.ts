@@ -3,17 +3,23 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../../../core/services/api.service';
 import { PageLayoutComponent } from '../../../../shared/components/page-layout/page-layout.component';
+import { TranslationService } from '../../../../core/i18n/translation.service';
+
+const CAT_KEYS: Record<string, string> = {
+  NATATION: 'natation', COMPETITION: 'competition', FORMATION: 'formation',
+  GOUVERNANCE: 'gouvernance', INFRASTRUCTURE: 'infrastructure', GENERAL: 'general',
+};
 
 @Component({
   selector: 'app-news-detail',
   template: `
     <app-page-layout>
       <section class="mx-auto max-w-[900px] px-6 lg:px-10 py-16">
-        <a routerLink="/news" class="inline-flex items-center gap-2 text-white/50 hover:text-white text-sm mb-12 transition-colors">← Retour aux actualités</a>
+        <a routerLink="/news" class="inline-flex items-center gap-2 text-white/50 hover:text-white text-sm mb-12 transition-colors"><span class="rtl-flip">←</span> {{ 'content.detail.back' | translate }}</a>
         @if (loading()) {
-          <div class="text-white/40 text-center py-20">Chargement…</div>
+          <div class="text-white/40 text-center py-20">{{ 'common.loading' | translate }}</div>
         } @else if (!article()) {
-          <div class="text-white/40 text-center py-20">Article introuvable.</div>
+          <div class="text-white/40 text-center py-20">{{ 'content.detail.notFound' | translate }}</div>
         } @else {
           @if (article().imageUrl) {
             <div class="aspect-video overflow-hidden mb-10 -mx-6 lg:-mx-10">
@@ -22,7 +28,7 @@ import { PageLayoutComponent } from '../../../../shared/components/page-layout/p
           }
           <div class="flex items-center gap-4 mb-6">
             <span class="text-[10px] tracking-[0.2em] uppercase px-3 py-1 rounded-full text-accent" style="background:rgba(225,6,0,0.1)">
-              {{ article().categorie?.toLowerCase() }}
+              {{ catLabel(article().categorie) }}
             </span>
             <span class="text-sm text-white/40">{{ fmtDate(article().datePublication || article().createdAt) }}</span>
             @if (article().auteurNom) {
@@ -41,7 +47,7 @@ export class NewsDetailComponent implements OnInit {
   readonly article = signal<any>(null);
   readonly loading = signal(true);
 
-  constructor(private api: ApiService, private route: ActivatedRoute) {}
+  constructor(private api: ApiService, private route: ActivatedRoute, private i18n: TranslationService) {}
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     this.api.get<any>(`/actualites/${id}`).subscribe({
@@ -53,5 +59,10 @@ export class NewsDetailComponent implements OnInit {
   fmtDate(d?: string): string {
     if (!d) return '';
     return new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' });
+  }
+
+  catLabel(categorie?: string): string {
+    const key = CAT_KEYS[(categorie ?? '').toUpperCase()];
+    return key ? this.i18n.t('content.categories.' + key) : (categorie ?? '').toLowerCase();
   }
 }

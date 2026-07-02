@@ -21,7 +21,7 @@ import { ApiService } from '../../../../core/services/api.service';
         </div>
         <div>
           <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Date de naissance *</label>
-          <input type="date" [(ngModel)]="form.dateNaissance" name="dn" required class="block w-full bg-transparent border-b border-white/20 pb-3 outline-none transition-colors text-white"/>
+          <input type="date" [(ngModel)]="form.date_naissance" name="dn" required class="block w-full bg-transparent border-b border-white/20 pb-3 outline-none transition-colors text-white"/>
         </div>
         <div>
           <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Nationalité *</label>
@@ -42,9 +42,17 @@ import { ApiService } from '../../../../core/services/api.service';
             <option value="FEMININ" class="bg-[#1a0000]">Féminin</option>
           </select>
         </div>
+        <div>
+          <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Email</label>
+          <input type="email" [(ngModel)]="form.email" name="email" class="block w-full bg-transparent border-b border-white/20 focus:border-white pb-3 outline-none transition-colors"/>
+        </div>
+        <div>
+          <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Téléphone</label>
+          <input type="tel" [(ngModel)]="form.telephone" name="telephone" class="block w-full bg-transparent border-b border-white/20 focus:border-white pb-3 outline-none transition-colors"/>
+        </div>
         <div class="col-span-2">
           <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Club</label>
-          <select [(ngModel)]="form.clubId" name="club" class="block w-full bg-transparent border-b border-white/20 pb-3 outline-none text-white">
+          <select [(ngModel)]="form.club_id" name="club" class="block w-full bg-transparent border-b border-white/20 pb-3 outline-none text-white">
             <option [value]="null" class="bg-[#1a0000]">Sans club</option>
             @for (c of clubs(); track c.id) { <option [value]="c.id" class="bg-[#1a0000]">{{ c.nom }}</option> }
           </select>
@@ -68,7 +76,7 @@ export class AthleteFormComponent implements OnInit, OnChanges {
   readonly error = signal('');
   readonly clubs = signal<any[]>([]);
   errors: Record<string, string> = {};
-  form = { nom:'', prenom:'', dateNaissance:'', nationalite:'', categorie:'', sexe:'', clubId: null as number | null };
+  form: any = { nom:'', prenom:'', date_naissance:'', nationalite:'', categorie:'', sexe:'', email:'', telephone:'', club_id: null };
   readonly CATS = ['POUSSIN','BENJAMIN','MINIME','CADET','JUNIOR','SENIOR'];
 
   constructor(private api: ApiService) {}
@@ -83,14 +91,24 @@ export class AthleteFormComponent implements OnInit, OnChanges {
     this.saving.set(false);
     this.errors = {};
     if (!this.isEdit) {
-      this.form = { nom:'', prenom:'', dateNaissance:'', nationalite:'', categorie:'', sexe:'', clubId: null };
+      this.form = { nom:'', prenom:'', date_naissance:'', nationalite:'', categorie:'', sexe:'', email:'', telephone:'', club_id: null };
       return;
     }
     this.loading.set(true);
     this.api.get<any>(`/athletes/${this.id}`).subscribe({
       next: r => {
         const a = r?.data ?? r;
-        this.form = { nom:a.nom??'', prenom:a.prenom??'', dateNaissance:a.dateNaissance?.slice(0,10)??'', nationalite:a.nationalite??'', categorie:a.categorie??'', sexe:a.sexe??'', clubId:a.clubId??null };
+        this.form = {
+          nom: a.nom ?? '',
+          prenom: a.prenom ?? '',
+          date_naissance: (a.date_naissance ?? a.dateNaissance ?? '').slice(0, 10),
+          nationalite: a.nationalite ?? '',
+          categorie: a.categorie ?? '',
+          sexe: a.sexe ?? '',
+          email: a.email ?? '',
+          telephone: a.telephone ?? '',
+          club_id: a.club_id ?? a.clubId ?? null,
+        };
         this.loading.set(false);
       },
       error: () => this.loading.set(false)

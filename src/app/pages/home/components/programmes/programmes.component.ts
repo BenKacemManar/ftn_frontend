@@ -2,6 +2,7 @@ import { Component, OnInit } from "@angular/core";
 import { LucideAngularModule, ArrowUpRight } from "lucide-angular";
 import { RevealDirective } from "../../../../shared/reveal.directive";
 import { ApiService } from "../../../../core/services/api.service";
+import { TranslationService } from "../../../../core/i18n/translation.service";
 
 interface Program {
   n: string;
@@ -21,16 +22,15 @@ interface Program {
             <div class="flex items-center gap-4">
               <span class="text-xs tracking-[0.3em] uppercase text-white/40">02</span>
               <span class="h-px w-10 bg-accent"></span>
-              <span class="text-xs tracking-[0.3em] uppercase text-white/70">Programmes</span>
+              <span class="text-xs tracking-[0.3em] uppercase text-white/70">{{ 'home.programmes.kicker' | translate }}</span>
             </div>
             <h2 class="font-serif text-5xl lg:text-7xl leading-[0.95] mt-8 max-w-2xl">
-              Trois voies, <br />
-              <span class="italic">une seule</span> exigence.
+              {{ 'home.programmes.titleLine1' | translate }} <br />
+              <span class="italic">{{ 'home.programmes.titleItalic' | translate }}</span> {{ 'home.programmes.titleSuffix' | translate }}
             </h2>
           </div>
           <p class="max-w-md text-white/60 leading-relaxed">
-            Chaque parcours est encadré par des entraîneurs diplômés et conçu pour
-            révéler le meilleur de chaque nageur, du débutant au compétiteur.
+            {{ 'home.programmes.intro' | translate }}
           </p>
         </div>
 
@@ -60,17 +60,17 @@ interface Program {
               <h3 class="font-serif text-3xl lg:text-4xl mb-4">{{ p.title }}</h3>
               <p class="text-white/60 leading-relaxed mb-8">{{ p.desc }}</p>
               <div class="mt-auto flex items-center justify-between">
-                <span class="text-sm tracking-wide">S'inscrire</span>
+                <span class="text-sm tracking-wide">{{ 'home.programmes.enroll' | translate }}</span>
                 <span
                   class="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-accent group-hover:border-accent transition-colors"
                 >
-                  <lucide-icon [img]="ArrowUpRight" class="w-4 h-4"></lucide-icon>
+                  <lucide-icon [img]="ArrowUpRight" class="w-4 h-4 rtl-flip"></lucide-icon>
                 </span>
               </div>
             </article>
           }
           @if (programs.length === 0) {
-            <div class="col-span-3 text-white/40 text-center py-16">Aucun programme disponible.</div>
+            <div class="col-span-3 text-white/40 text-center py-16">{{ 'home.programmes.empty' | translate }}</div>
           }
         </div>
       </div>
@@ -81,7 +81,7 @@ export class ProgrammesComponent implements OnInit {
   readonly ArrowUpRight = ArrowUpRight;
   programs: Program[] = [];
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private i18n: TranslationService) {}
 
   ngOnInit(): void {
     this.api.get<any>('/programs/actives').subscribe({
@@ -90,7 +90,9 @@ export class ProgrammesComponent implements OnInit {
         this.programs = items.map((p: any, i: number) => ({
           n: String(i + 1).padStart(2, '0'),
           title: p.nom,
-          age: p.ageMin != null && p.ageMax != null ? `${p.ageMin} — ${p.ageMax} ans` : (p.ageMin != null ? `${p.ageMin} ans et +` : ''),
+          age: p.ageMin != null && p.ageMax != null
+            ? this.i18n.t('home.programmes.ageRange', { min: p.ageMin, max: p.ageMax })
+            : (p.ageMin != null ? this.i18n.t('home.programmes.ageMin', { min: p.ageMin }) : ''),
           desc: p.description ?? '',
           img: p.imageUrl ?? '',
         }));

@@ -69,7 +69,7 @@ export class ResultsService {
   }
 
   rebuildRankings(eventId: string, season: string): Observable<any> {
-    return this.api.post<any>('/rankings/rebuild', { eventId: Number(eventId), season });
+    return this.api.post<any>('/rankings/rebuild', { event_id: Number(eventId), season });
   }
 
   createResult(data: Partial<Result>): Observable<Result> {

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
+import { SharedModule } from '../../shared/shared.module';
 import { HomeRoutingModule } from './home-routing.module';
 import { RevealDirective } from '../../shared/reveal.directive';
 import { CounterDirective } from '../../shared/counter.directive';
@@ -37,6 +38,6 @@ import { FooterComponent } from './components/footer/footer.component';
     ContactComponent,
     FooterComponent,
   ],
-  imports: [CommonModule, RouterModule, FormsModule, LucideAngularModule, HomeRoutingModule],
+  imports: [CommonModule, RouterModule, FormsModule, LucideAngularModule, SharedModule, HomeRoutingModule],
 })
 export class HomeModule {}

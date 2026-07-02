@@ -14,6 +14,20 @@ body {
   font-family: "Inter", system-ui, sans-serif;
 }
 
+/* ═══════════════════════════════════════════════════════
+   RTL (Arabic) support
+════════════════════════════════════════════════════════ */
+html[dir="rtl"] body {
+  direction: rtl;
+}
+html[dir="rtl"] .font-serif {
+  font-family: "Fraunces", "Amiri", Georgia, serif;
+}
+/* Directional icons (arrows / chevrons) that should mirror in RTL */
+html[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}
+
 .font-serif {
   font-family: "Fraunces", Georgia, serif;
   font-feature-settings: "ss01";

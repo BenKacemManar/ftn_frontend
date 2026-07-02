@@ -16,8 +16,8 @@ import { AuthService } from '../../../core/services/auth.service';
         <a routerLink="/" class="flex items-center gap-3 flex-shrink-0 whitespace-nowrap">
           <img src="assets/logo.png" alt="EST" class="w-11 h-11 object-cover rounded-full ring-1 ring-white/20 flex-shrink-0 aspect-square" />
           <div class="leading-tight">
-            <div class="text-[11px] tracking-[0.3em] text-white/50 uppercase">Espérance · 1919</div>
-            <div class="text-sm tracking-[0.25em] uppercase">Section Natation</div>
+            <div class="text-[11px] tracking-[0.3em] text-white/50 uppercase">{{ 'nav.brandLine' | translate }}</div>
+            <div class="text-sm tracking-[0.25em] uppercase">{{ 'nav.brandSection' | translate }}</div>
           </div>
         </a>
 
@@ -26,19 +26,20 @@ import { AuthService } from '../../../core/services/auth.service';
             <a [routerLink]="n.to" routerLinkActive="text-white"
               [routerLinkActiveOptions]="{ exact: n.to === '/' }"
               class="relative px-4 py-2 text-sm text-white/70 hover:text-white transition-colors group">
-              {{ n.label }}
+              {{ n.labelKey | translate }}
               <span class="absolute left-4 right-4 -bottom-0.5 h-px bg-accent scale-x-0 origin-left transition-transform group-hover:scale-x-100"></span>
             </a>
           }
         </nav>
 
         <div class="hidden lg:flex items-center gap-3">
+          <app-language-switcher></app-language-switcher>
           @if (auth.isLoggedIn()) {
             @if (auth.hasRole('ADMIN')) {
               <a routerLink="/admin"
                 class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent hover:bg-white hover:text-black transition-colors text-sm font-medium border border-accent text-white shadow-sm mr-1">
                 <lucide-icon [img]="LayoutDashboard" class="w-4 h-4"></lucide-icon>
-                <span>Tableau de bord</span>
+                <span>{{ 'nav.dashboard' | translate }}</span>
               </a>
             }
             <div class="relative">
@@ -51,16 +52,20 @@ import { AuthService } from '../../../core/services/auth.service';
                   @if (auth.hasRole('ADMIN')) {
                     <a routerLink="/admin" (click)="menuOpen.set(false)"
                       class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-white/5 transition-colors">
-                      Administration
+                      {{ 'nav.administration' | translate }}
                     </a>
                   }
+                  <a routerLink="/reservations" (click)="menuOpen.set(false)"
+                    class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-white/5 transition-colors">
+                    Mes réservations
+                  </a>
                   <a routerLink="/results/my" (click)="menuOpen.set(false)"
                     class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-white/5 transition-colors">
-                    Mes résultats
+                    {{ 'nav.myResults' | translate }}
                   </a>
                   <button (click)="logout()"
                     class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-white/5 transition-colors w-full text-left text-white/70">
-                    Déconnexion
+                    {{ 'common.logout' | translate }}
                   </button>
                 </div>
               }
@@ -68,7 +73,7 @@ import { AuthService } from '../../../core/services/auth.service';
           } @else {
             <a routerLink="/auth/login"
               class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black text-sm hover:bg-accent hover:text-white transition-colors">
-              Connexion
+              {{ 'common.login' | translate }}
             </a>
           }
         </div>
@@ -85,22 +90,23 @@ import { AuthService } from '../../../core/services/auth.service';
       @if (mobileOpen()) {
         <div class="lg:hidden overflow-hidden border-t border-white/10 bg-black/95">
           <div class="px-6 py-6 flex flex-col gap-1">
+            <div class="py-3"><app-language-switcher></app-language-switcher></div>
             @for (n of navLinks; track n.to) {
               <a [routerLink]="n.to" (click)="mobileOpen.set(false)"
-                class="py-3 text-lg border-b border-white/5">{{ n.label }}</a>
+                class="py-3 text-lg border-b border-white/5">{{ n.labelKey | translate }}</a>
             }
             @if (auth.isLoggedIn()) {
               @if (auth.hasRole('ADMIN')) {
                 <a routerLink="/admin" (click)="mobileOpen.set(false)"
                   class="py-3 text-lg text-gold border-b border-white/5 flex items-center gap-2">
                   <lucide-icon [img]="LayoutDashboard" class="w-4 h-4"></lucide-icon>
-                  Tableau de bord
+                  {{ 'nav.dashboard' | translate }}
                 </a>
               }
-              <button (click)="logout()" class="py-3 text-lg text-white/60 text-left">Déconnexion</button>
+              <button (click)="logout()" class="py-3 text-lg text-white/60 text-left">{{ 'common.logout' | translate }}</button>
             } @else {
               <a routerLink="/auth/login" (click)="mobileOpen.set(false)"
-                class="py-3 text-lg text-accent">Connexion</a>
+                class="py-3 text-lg text-accent">{{ 'common.login' | translate }}</a>
             }
           </div>
         </div>
@@ -118,14 +124,16 @@ export class SiteNavComponent {
   readonly mobileOpen = signal(false);
 
   readonly navLinks = [
-    { label: 'Accueil', to: '/' },
-    { label: 'Compétitions', to: '/competitions' },
-    { label: 'Résultats', to: '/results' },
-    { label: 'Actualités', to: '/news' },
-    { label: 'Forum', to: '/forum' },
-    { label: 'Athlètes', to: '/athletes' },
-    { label: 'Clubs', to: '/athletes/clubs' },
-    { label: 'Piscines', to: '/pools' },
+    { labelKey: 'nav.home', to: '/' },
+    { labelKey: 'nav.competitions', to: '/competitions' },
+    { labelKey: 'nav.results', to: '/results' },
+    { labelKey: 'nav.news', to: '/news' },
+    { labelKey: 'nav.forum', to: '/forum' },
+    { labelKey: 'nav.athletes', to: '/athletes' },
+    { labelKey: 'nav.clubs', to: '/athletes/clubs' },
+    { labelKey: 'nav.pools', to: '/pools' },
+    { labelKey: 'nav.reservations', to: '/reservations' },
+    { labelKey: 'nav.evenements', to: '/evenements' },
   ];
 
   constructor(readonly auth: AuthService) {}

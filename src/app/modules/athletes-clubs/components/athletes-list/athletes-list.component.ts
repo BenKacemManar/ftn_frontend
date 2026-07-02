@@ -5,9 +5,9 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
 import { PageLayoutComponent } from '../../../../shared/components/page-layout/page-layout.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { TranslationService } from '../../../../core/i18n/translation.service';
 
 const CATS = ['','POUSSIN','BENJAMIN','MINIME','CADET','JUNIOR','SENIOR'];
-const GENDERS = [{ v:'',l:'Tous' },{ v:'MASCULIN',l:'Hommes' },{ v:'FEMININ',l:'Femmes' }];
 
 @Component({
   selector: 'app-athletes-list',
@@ -18,26 +18,26 @@ const GENDERS = [{ v:'',l:'Tous' },{ v:'MASCULIN',l:'Hommes' },{ v:'FEMININ',l:'
           <div>
             <div class="flex items-center gap-4 mb-6">
               <span class="h-px w-10 bg-accent"></span>
-              <span class="text-xs tracking-[0.3em] uppercase text-white/70">Athlètes</span>
+              <span class="text-xs tracking-[0.3em] uppercase text-white/70">{{ 'athletesClubs.athletesList.kicker' | translate }}</span>
             </div>
             <h1 class="font-serif text-5xl lg:text-7xl leading-[0.95]">
-              Nos <span class="italic text-gold">champions.</span>
+              {{ 'athletesClubs.athletesList.titleLine1' | translate }} <span class="italic text-gold">{{ 'athletesClubs.athletesList.titleItalic' | translate }}</span>
             </h1>
           </div>
-          <a routerLink="/athletes/clubs" class="px-5 py-2.5 rounded-full border border-white/20 hover:border-white text-sm transition-colors">Voir les clubs →</a>
+          <a routerLink="/athletes/clubs" class="px-5 py-2.5 rounded-full border border-white/20 hover:border-white text-sm transition-colors">{{ 'athletesClubs.athletesList.viewClubs' | translate }}</a>
         </div>
 
         <app-filter-bar
-          searchPlaceholder="Rechercher…"
+          [searchPlaceholder]="'athletesClubs.athletesList.searchPlaceholder' | translate"
           [searchValue]="search"
           (searchValueChange)="onSearchValue($event)"
           [groups]="filterGroups"
           (groupChange)="onFilterGroupChange($event)" />
 
         @if (loading()) {
-          <div class="text-white/40 text-center py-20">Chargement…</div>
+          <div class="text-white/40 text-center py-20">{{ 'common.loading' | translate }}</div>
         } @else if (page_items().length === 0) {
-          <div class="text-white/40 text-center py-20">Aucun athlète.</div>
+          <div class="text-white/40 text-center py-20">{{ 'athletesClubs.athletesList.empty' | translate }}</div>
         } @else {
           <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             @for (a of page_items(); track a.id) {
@@ -47,7 +47,7 @@ const GENDERS = [{ v:'',l:'Tous' },{ v:'MASCULIN',l:'Hommes' },{ v:'FEMININ',l:'
                     <span class="font-serif text-5xl text-white/20">{{ initials(a) }}</span>
                   </div>
                   <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-                  <div class="absolute top-3 left-3 text-[10px] tracking-[0.2em] uppercase text-gold">{{ a.categorie?.toLowerCase() }}</div>
+                  <div class="absolute top-3 left-3 text-[10px] tracking-[0.2em] uppercase text-gold">{{ categoryLabel(a.categorie) }}</div>
                   <div class="absolute bottom-4 left-4 right-4">
                     <div class="font-serif text-lg">{{ a.prenom }} {{ a.nom }}</div>
                     <div class="text-xs text-white/50 mt-1">{{ a.nationalite }}</div>
@@ -69,7 +69,14 @@ export class AthletesListComponent implements OnInit {
   readonly categorySig = signal('');
   readonly genderSig = signal('');
   readonly pageSig = signal(1);
-  readonly CATS = CATS; readonly GENDERS = GENDERS;
+  readonly CATS = CATS;
+  get GENDERS() {
+    return [
+      { v: '', l: this.i18n.t('athletesClubs.athletesList.genderAll') },
+      { v: 'MASCULIN', l: this.i18n.t('athletesClubs.athletesList.genderMale') },
+      { v: 'FEMININ', l: this.i18n.t('athletesClubs.athletesList.genderFemale') },
+    ];
+  }
 
   get search(): string { return this.searchSig(); }
   get category(): string { return this.categorySig(); }
@@ -92,7 +99,7 @@ export class AthletesListComponent implements OnInit {
     return this.filtered().slice(start, start + 12);
   });
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private i18n: TranslationService) {}
   ngOnInit(): void {
     this.loading.set(true);
     this.api.get<any>('/athletes', { page: 0, size: 500 }).subscribe({
@@ -101,9 +108,21 @@ export class AthletesListComponent implements OnInit {
     });
   }
 
+  categoryLabel(c: string): string {
+    const map: Record<string, string> = {
+      POUSSIN: 'athletesClubs.categories.poussin',
+      BENJAMIN: 'athletesClubs.categories.benjamin',
+      MINIME: 'athletesClubs.categories.minime',
+      CADET: 'athletesClubs.categories.cadet',
+      JUNIOR: 'athletesClubs.categories.junior',
+      SENIOR: 'athletesClubs.categories.senior',
+    };
+    return map[c] ? this.i18n.t(map[c]) : this.i18n.t('athletesClubs.athletesList.categoryAll');
+  }
+
   get filterGroups() {
     return [
-      { options: this.CATS.map(c => ({ value: c, label: c || 'Toutes' })), selected: this.category },
+      { options: this.CATS.map(c => ({ value: c, label: this.categoryLabel(c) })), selected: this.category },
       { options: this.GENDERS.map(g => ({ value: g.v, label: g.l })), selected: this.gender },
     ];
   }

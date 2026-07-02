@@ -1,7 +1,8 @@
 import { Component, signal } from '@angular/core';
 import {
   LayoutDashboard, User, Building2, Trophy, ListOrdered, Droplet,
-  Newspaper, CreditCard, MessageCircle, Users, GraduationCap, Award, ArrowLeft,
+  Newspaper, CreditCard, MessageCircle, Users, GraduationCap, Award, ArrowLeft, CalendarCheck,
+  CalendarDays, ClipboardList,
 } from 'lucide-angular';
 import { AuthService } from '../../../../core/services/auth.service';
 
@@ -9,9 +10,12 @@ const LINKS = [
   { label: 'Tableau de bord', to: '/admin',           icon: LayoutDashboard, exact: true },
   { label: 'Athlètes',        to: '/admin/athletes',  icon: User },
   { label: 'Clubs',           to: '/admin/clubs',     icon: Building2 },
-  { label: 'Compétitions',    to: '/competitions',    icon: Trophy },
-  { label: 'Résultats',       to: '/results',         icon: ListOrdered },
+  { label: 'Compét. / Événem.', to: '/competitions',  icon: Trophy },
+  { label: 'Résultats',         to: '/results',       icon: ListOrdered },
   { label: 'Piscines',        to: '/admin/pools',     icon: Droplet },
+  { label: 'Réservations',   to: '/admin/reservations', icon: CalendarCheck },
+  { label: 'Événements',    to: '/admin/evenements',   icon: CalendarDays },
+  { label: 'Inscriptions',  to: '/admin/inscriptions', icon: ClipboardList },
   { label: 'Programmes',      to: '/admin/programs',  icon: GraduationCap },
   { label: 'Classements',     to: '/admin/classements', icon: Award },
   { label: 'Actualités',      to: '/admin/news',      icon: Newspaper },

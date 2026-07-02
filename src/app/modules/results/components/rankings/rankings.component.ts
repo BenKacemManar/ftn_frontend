@@ -1,11 +1,11 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RefreshCw } from 'lucide-angular';
 import { ApiService } from '../../../../core/services/api.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { PageLayoutComponent } from '../../../../shared/components/page-layout/page-layout.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { TranslationService } from '../../../../core/i18n/translation.service';
 
 @Component({
   selector: 'app-rankings',
@@ -16,17 +16,17 @@ import { PaginationComponent } from '../../../../shared/components/pagination/pa
           <div>
             <div class="flex items-center gap-4 mb-6">
               <span class="h-px w-10 bg-accent"></span>
-              <span class="text-xs tracking-[0.3em] uppercase text-white/70">Classements</span>
+              <span class="text-xs tracking-[0.3em] uppercase text-white/70">{{ 'results.rankings.kicker' | translate }}</span>
             </div>
             <h1 class="font-serif text-5xl lg:text-7xl leading-[0.95]">
-              Classements <br/><span class="italic text-gold">nationaux.</span>
+              {{ 'results.rankings.titleLine1' | translate }} <br/><span class="italic text-gold">{{ 'results.rankings.titleItalic' | translate }}</span>
             </h1>
           </div>
           @if (auth.hasRole('ADMIN')) {
-            <button (click)="rebuild()" [disabled]="rebuilding()"
-              class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/20 hover:border-white text-sm transition-colors disabled:opacity-50">
-              <lucide-icon [img]="RefreshCw" class="w-4 h-4"></lucide-icon> Reconstruire
-            </button>
+            <a routerLink="/admin/classements"
+              class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/20 hover:border-white text-sm transition-colors">
+              {{ 'results.rankings.manageLink' | translate }}
+            </a>
           }
         </div>
         <div class="flex flex-wrap gap-4 mb-12 pb-8 border-b border-white/10">
@@ -43,15 +43,15 @@ import { PaginationComponent } from '../../../../shared/components/pagination/pa
           }
         </div>
         @if (loading()) {
-          <div class="text-white/40 text-center py-20">Chargement…</div>
+          <div class="text-white/40 text-center py-20">{{ 'common.loading' | translate }}</div>
         } @else if (rankings().length === 0) {
-          <div class="text-white/40 text-center py-20">Aucun classement.</div>
+          <div class="text-white/40 text-center py-20">{{ 'results.rankings.empty' | translate }}</div>
         } @else {
           <div class="border-t border-white/10">
             <div class="grid grid-cols-12 text-xs tracking-[0.2em] uppercase text-white/40 border-b border-white/10 pb-3 mb-2 px-2">
-              <div class="col-span-1">Rang</div><div class="col-span-4">Athlète</div>
-              <div class="col-span-3">Épreuve</div><div class="col-span-2">Meilleur temps</div>
-              <div class="col-span-1">FINA</div><div class="col-span-1">Saison</div>
+              <div class="col-span-1">{{ 'results.rankings.colRank' | translate }}</div><div class="col-span-4">{{ 'results.rankings.colAthlete' | translate }}</div>
+              <div class="col-span-3">{{ 'results.rankings.colEvent' | translate }}</div><div class="col-span-2">{{ 'results.rankings.colBestTime' | translate }}</div>
+              <div class="col-span-1">{{ 'results.rankings.colFina' | translate }}</div><div class="col-span-1">{{ 'results.rankings.colSeason' | translate }}</div>
             </div>
             @for (r of rankings(); track r.id) {
               <div class="grid grid-cols-12 items-center py-4 border-b border-white/10 hover:bg-white/[0.02] px-2 transition-colors">
@@ -76,15 +76,19 @@ import { PaginationComponent } from '../../../../shared/components/pagination/pa
   `
 })
 export class RankingsComponent implements OnInit {
-  readonly RefreshCw = RefreshCw;
   readonly rankings = signal<any[]>([]);
   readonly loading = signal(false);
-  readonly rebuilding = signal(false);
   total = 0; page = 1;
   season = String(new Date().getFullYear()); gender = '';
-  readonly genders = [{ v:'',l:'Tous' },{ v:'M',l:'Messieurs' },{ v:'F',l:'Dames' }];
+  readonly genders: { v: string; l: string }[];
 
-  constructor(private api: ApiService, readonly auth: AuthService) {}
+  constructor(private api: ApiService, readonly auth: AuthService, private i18n: TranslationService) {
+    this.genders = [
+      { v: '', l: this.i18n.t('results.rankings.genderAll') },
+      { v: 'M', l: this.i18n.t('results.rankings.genderMen') },
+      { v: 'F', l: this.i18n.t('results.rankings.genderWomen') },
+    ];
+  }
   ngOnInit(): void { this.load(); }
 
   load(): void {
@@ -93,14 +97,9 @@ export class RankingsComponent implements OnInit {
     if (this.gender) p.gender = this.gender;
     if (this.season) p.season = this.season;
     this.api.get<any>('/rankings', p).subscribe({
-      next: r => { this.rankings.set(r?.data ?? r?.content ?? []); this.total = r?.totalCount ?? r?.totalElements ?? 0; this.loading.set(false); },
+      next: r => { this.rankings.set(r?.data ?? r?.content ?? []); this.total = r?.totalCount ?? r?.total_count ?? r?.totalElements ?? 0; this.loading.set(false); },
       error: () => this.loading.set(false)
     });
-  }
-
-  rebuild(): void {
-    this.rebuilding.set(true);
-    this.api.post('/rankings/rebuild', { season: this.season }).subscribe({ next: () => { this.rebuilding.set(false); this.load(); }, error: () => this.rebuilding.set(false) });
   }
 
   onFilter(): void { this.page = 1; this.load(); }

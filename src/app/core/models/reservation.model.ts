@@ -1,0 +1,47 @@
+export type ReservationStatut = 'EN_ATTENTE' | 'CONFIRMEE' | 'ANNULEE';
+export type TypeReservation = 'ATHLETE' | 'CLUB';
+
+export interface Reservation {
+  id: number;
+  poolId: number;
+  poolNom: string;
+  poolVille: string;
+  date: string;
+  heureDebut: string;
+  heureFin: string;
+  typeReservation: TypeReservation;
+  nbCouloirs: number;
+  numeroCouloir?: number;
+  numerosCouloirs?: number[];
+  reserveePar: string;
+  nomClub?: string;
+  statut: ReservationStatut;
+  notes?: string;
+  createdAt?: string;
+}
+
+export interface CreateReservationDto {
+  poolId: number;
+  date: string;
+  heureDebut: string;
+  heureFin: string;
+  typeReservation: TypeReservation;
+  nbCouloirs: number;
+  numeroCouloir?: number;
+  numerosCouloirs?: number[];
+  reserveePar?: string;
+  nomClub?: string;
+  notes?: string;
+}
+
+export interface CreateRecurringReservationDto {
+  poolId: number;
+  startDate: string;
+  heureDebut: string;
+  heureFin: string;
+  typeReservation: TypeReservation;
+  nbCouloirs: number;
+  occurrences: number;
+  nomClub?: string;
+  notes?: string;
+}

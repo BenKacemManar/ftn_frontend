@@ -1,12 +1,13 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { PageLayoutComponent } from '../../../../shared/components/page-layout/page-layout.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
+import { TranslationService } from '../../../../core/i18n/translation.service';
 
 const RS: Record<string,string> = { EN_ATTENTE:'pending', VALIDE:'ok', DQ:'DQ', DNS:'DNS', DNF:'DNF' };
 
@@ -19,32 +20,40 @@ const RS: Record<string,string> = { EN_ATTENTE:'pending', VALIDE:'ok', DQ:'DQ', 
           <div>
             <div class="flex items-center gap-4 mb-6">
               <span class="h-px w-10 bg-accent"></span>
-              <span class="text-xs tracking-[0.3em] uppercase text-white/70">Résultats</span>
+              <span class="text-xs tracking-[0.3em] uppercase text-white/70">{{ 'results.list.kicker' | translate }}</span>
             </div>
             <h1 class="font-serif text-5xl lg:text-7xl leading-[0.95]">
-              Résultats <br/><span class="italic text-gold">& performances.</span>
+              {{ 'results.list.titleLine1' | translate }} <br/><span class="italic text-gold">{{ 'results.list.titleItalic' | translate }}</span>
             </h1>
           </div>
-          <a routerLink="/results/rankings"
-            class="px-5 py-2.5 rounded-full border border-white/20 hover:border-white text-sm transition-colors">
-            Classements nationaux →
-          </a>
+          <div class="flex items-center gap-3">
+            @if (auth.hasRole('ADMIN')) {
+              <button (click)="router.navigate(['/results/new'])"
+                class="px-5 py-2.5 rounded-full bg-accent text-white text-sm hover:bg-white hover:text-black transition-colors">
+                {{ 'results.list.addResult' | translate }}
+              </button>
+            }
+            <a routerLink="/results/rankings"
+              class="px-5 py-2.5 rounded-full border border-white/20 hover:border-white text-sm transition-colors">
+              {{ 'results.list.rankingsLink' | translate }}
+            </a>
+          </div>
         </div>
         <app-filter-bar
-          searchPlaceholder="Rechercher un athlète…"
+          [searchPlaceholder]="'results.list.searchPlaceholder' | translate"
           [searchValue]="search" (searchValueChange)="onSearchValue($event)"
           [groups]="filterGroups" (groupChange)="onGroupChange($event)"
           [selects]="filterSelects" (selectChange)="onSelectChange($event)" />
         @if (loading()) {
-          <div class="text-white/40 text-center py-20">Chargement…</div>
+          <div class="text-white/40 text-center py-20">{{ 'common.loading' | translate }}</div>
         } @else if (results().length === 0) {
-          <div class="text-white/40 text-center py-20">Aucun résultat.</div>
+          <div class="text-white/40 text-center py-20">{{ 'common.noResults' | translate }}</div>
         } @else {
           <div>
             <div class="grid grid-cols-12 text-xs tracking-[0.2em] uppercase text-white/40 border-b border-white/10 pb-3 mb-2 px-2">
-              <div class="col-span-1">Statut</div><div class="col-span-4">Athlète</div>
-              <div class="col-span-3">Épreuve</div><div class="col-span-2">Temps</div>
-              <div class="col-span-1">FINA</div><div class="col-span-1">Rang</div>
+              <div class="col-span-1">{{ 'results.list.colStatus' | translate }}</div><div class="col-span-4">{{ 'results.list.colAthlete' | translate }}</div>
+              <div class="col-span-3">{{ 'results.list.colEvent' | translate }}</div><div class="col-span-2">{{ 'results.list.colTime' | translate }}</div>
+              <div class="col-span-1">{{ 'results.list.colFina' | translate }}</div><div class="col-span-1">{{ 'results.list.colRank' | translate }}</div>
             </div>
             @for (r of results(); track r.id) {
               <div class="grid grid-cols-12 items-center py-4 border-b border-white/10 hover:bg-white/[0.02] px-2 transition-colors">
@@ -77,33 +86,44 @@ export class ResultsListComponent implements OnInit {
   readonly loading = signal(false);
   total = 0; page = 1; pageSize = 10;
   search = ''; gender = ''; year = '';
-  readonly genders = [{ v:'', l:'Tous' }, { v:'M', l:'Messieurs' }, { v:'F', l:'Dames' }];
+  readonly genders: { v: string; l: string }[];
   readonly years = [2026, 2025, 2024, 2023, 2022];
 
-  constructor(private api: ApiService, readonly auth: AuthService) {}
+  constructor(private api: ApiService, readonly auth: AuthService, private i18n: TranslationService, readonly router: Router) {
+    this.genders = [
+      { v: '', l: this.i18n.t('results.list.genderAll') },
+      { v: 'M', l: this.i18n.t('results.list.genderMen') },
+      { v: 'F', l: this.i18n.t('results.list.genderWomen') },
+    ];
+  }
   ngOnInit(): void { this.load(); }
 
   load(): void {
     this.loading.set(true);
     const p: any = { page: this.page - 1, size: this.pageSize };
-    if (this.search) p.search = this.search;
-    if (this.gender) p.gender = this.gender;
-    if (this.year) p.year = this.year;
+    if (this.search) {
+      p['OR_PLike_athlete_nom'] = this.search;
+      p['OR_PLike_athlete_prenom'] = this.search;
+    }
+    if (this.gender) {
+      const sexeMap: Record<string, string> = { M: 'MASCULIN', F: 'FEMININ' };
+      p['PEqual_athlete_sexe'] = sexeMap[this.gender] ?? this.gender;
+    }
     this.api.get<any>('/results', p).subscribe({
       next: r => {
         this.results.set((r?.data ?? r?.content ?? []).map((x: any) => ({
           ...x,
           status: RS[x.statut ?? x.status] ?? x.statut ?? x.status,
-          athleteName: x.athlete_nom ?? x.athleteName ?? null,
+          athleteName: x.athleteNom ?? x.athleteName ?? null,
           eventLabel: x.epreuve ?? x.eventLabel ?? null,
-          competitionName: x.competition_nom ?? x.competitionName ?? null,
+          competitionName: x.competitionNom ?? x.competitionName ?? null,
           tempsDisplay: x.temps ?? x.tempsDisplay ?? null,
           rank: x.rang ?? x.rank ?? null,
-          clubName: x.club_nom ?? x.clubName ?? null,
-          pointsFina: x.points_fina ?? x.pointsFina ?? null,
-          isRecord: x.is_record ?? x.isRecord ?? false,
+          clubName: x.clubNom ?? x.clubName ?? null,
+          pointsFina: x.pointsFina ?? null,
+          isRecord: x.isRecord ?? false,
         })));
-        this.total = r?.total_count ?? r?.totalCount ?? r?.totalElements ?? 0;
+        this.total = r?.totalCount ?? r?.total_count ?? r?.totalElements ?? 0;
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
@@ -117,7 +137,7 @@ export class ResultsListComponent implements OnInit {
     return [{ options: this.genders.map(g => ({ value: g.v, label: g.l })), selected: this.gender }];
   }
   get filterSelects() {
-    return [{ placeholder: 'Toutes années', options: this.years.map(y => ({ value: String(y), label: String(y) })), selected: this.year }];
+    return [{ placeholder: this.i18n.t('results.list.yearsPlaceholder'), options: this.years.map(y => ({ value: String(y), label: String(y) })), selected: this.year }];
   }
   onSearchValue(v: string): void { this.search = v; this.onSearch(); }
   onGroupChange(e: { index: number; value: string }): void { this.gender = e.value; this.onSearch(); }

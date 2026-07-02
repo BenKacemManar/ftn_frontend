@@ -17,11 +17,11 @@ interface Champion {
           <div class="flex items-center gap-4">
             <span class="text-xs tracking-[0.3em] uppercase text-white/40">03</span>
             <span class="h-px w-10 bg-accent"></span>
-            <span class="text-xs tracking-[0.3em] uppercase text-white/70">Champions</span>
+            <span class="text-xs tracking-[0.3em] uppercase text-white/70">{{ 'home.champions.kicker' | translate }}</span>
           </div>
           <h2 class="font-serif text-5xl lg:text-7xl leading-[0.95] mt-8">
-            Les visages <br />
-            <span class="italic text-gold">du sang & or.</span>
+            {{ 'home.champions.titleLine1' | translate }} <br />
+            <span class="italic text-gold">{{ 'home.champions.titleItalic' | translate }}</span>
           </h2>
         </div>
 
@@ -40,7 +40,7 @@ interface Champion {
             </div>
           }
           @if (champs.length === 0) {
-            <div class="col-span-4 text-white/40 text-center py-10">Aucun classement disponible.</div>
+            <div class="col-span-4 text-white/40 text-center py-10">{{ 'home.champions.empty' | translate }}</div>
           }
         </div>
       </div>

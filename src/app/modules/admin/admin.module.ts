@@ -20,6 +20,10 @@ import { ClubStaffAdminComponent } from './components/club-staff-admin/club-staf
 import { ProgramsAdminComponent } from './components/programs-admin/programs-admin.component';
 import { ProgramFormComponent } from './components/program-form/program-form.component';
 import { ClassementsAdminComponent } from './components/classements-admin/classements-admin.component';
+import { ReservationScheduleGridComponent } from './components/reservation-schedule-grid/reservation-schedule-grid.component';
+import { EvenementsAdminComponent } from './components/evenements-admin/evenements-admin.component';
+import { EvenementFormComponent } from './components/evenement-form/evenement-form.component';
+import { InscriptionsAdminComponent } from './components/inscriptions-admin/inscriptions-admin.component';
 
 @NgModule({
   declarations: [
@@ -41,6 +45,10 @@ import { ClassementsAdminComponent } from './components/classements-admin/classe
     ProgramsAdminComponent,
     ProgramFormComponent,
     ClassementsAdminComponent,
+    ReservationScheduleGridComponent,
+    EvenementsAdminComponent,
+    EvenementFormComponent,
+    InscriptionsAdminComponent,
   ],
   imports: [SharedModule, AdminRoutingModule],
 })

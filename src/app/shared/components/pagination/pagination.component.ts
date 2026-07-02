@@ -6,7 +6,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
     @if (totalPages() > 1) {
       <div class="flex items-center justify-center gap-1 mt-8">
         <button (click)="onPage(page - 1)" [disabled]="page <= 1"
-          class="p-2 rounded-lg border border-white/10 hover:border-white/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+          class="p-2 rounded-lg border border-white/10 hover:border-white/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rtl-flip">
           ‹
         </button>
         @for (p of pages(); track p) {
@@ -23,7 +23,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
           }
         }
         <button (click)="onPage(page + 1)" [disabled]="page >= totalPages()"
-          class="p-2 rounded-lg border border-white/10 hover:border-white/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+          class="p-2 rounded-lg border border-white/10 hover:border-white/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rtl-flip">
           ›
         </button>
       </div>

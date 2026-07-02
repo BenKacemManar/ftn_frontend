@@ -1,100 +1,108 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertTriangle, Zap, Check } from 'lucide-angular';
-import { Result } from '../../../../core/models/result.model';
-import { ResultsService } from '../../services/results.service';
+import { ApiService } from '../../../../core/services/api.service';
 
 @Component({
   selector: 'app-result-form',
-  templateUrl: './result-form.component.html',
-  styleUrls: ['./result-form.component.scss']
+  template: `
+    <app-page-layout>
+      <section class="mx-auto max-w-[1400px] px-6 lg:px-10 py-16">
+        <a routerLink="/results" class="inline-flex items-center gap-2 text-white/50 hover:text-white text-sm mb-12 transition-colors">
+          <span class="rtl-flip">←</span> Retour aux résultats
+        </a>
+        <h1 class="font-serif text-4xl mb-12">
+          {{ isEdit ? 'Modifier le résultat' : 'Nouveau' }} <span class="italic text-gold">résultat.</span>
+        </h1>
+        @if (error()) {
+          <div class="mb-8 px-4 py-3 rounded-lg border border-accent text-accent text-sm" style="background:rgba(225,6,0,0.08)">{{ error() }}</div>
+        }
+        <form (ngSubmit)="save()" class="grid grid-cols-2 gap-x-12 gap-y-10 max-w-2xl">
+          <div>
+            <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">ID Athlète *</label>
+            <input type="number" [(ngModel)]="form.athleteId" name="athleteId" required min="1"
+              class="block w-full bg-transparent border-b border-white/20 pb-3 outline-none text-white">
+          </div>
+          <div>
+            <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">ID Compétition *</label>
+            <input type="number" [(ngModel)]="form.competitionId" name="competitionId" required min="1"
+              class="block w-full bg-transparent border-b border-white/20 pb-3 outline-none text-white">
+          </div>
+          <div class="col-span-2">
+            <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Épreuve * <span class="normal-case font-normal opacity-60">ex : 100m Nage Libre</span></label>
+            <input type="text" [(ngModel)]="form.epreuve" name="epreuve" required
+              class="block w-full bg-transparent border-b border-white/20 pb-3 outline-none text-white">
+          </div>
+          <div>
+            <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Temps <span class="normal-case opacity-60">ex : 58.34</span></label>
+            <input type="text" [(ngModel)]="form.temps" name="temps"
+              class="block w-full bg-transparent border-b border-white/20 pb-3 outline-none text-white font-mono">
+          </div>
+          <div>
+            <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Rang</label>
+            <input type="number" [(ngModel)]="form.rang" name="rang" min="1"
+              class="block w-full bg-transparent border-b border-white/20 pb-3 outline-none text-white">
+          </div>
+          <div class="col-span-2 flex gap-4 pt-4">
+            <button type="submit" [disabled]="saving()"
+              class="px-8 py-4 rounded-full bg-white text-black hover:bg-accent hover:text-white transition-colors disabled:opacity-50">
+              {{ saving() ? '…' : (isEdit ? 'Modifier' : 'Enregistrer') }}
+            </button>
+            <a routerLink="/results"
+              class="px-8 py-4 rounded-full border border-white/20 hover:border-white text-sm transition-colors">Annuler</a>
+          </div>
+        </form>
+      </section>
+    </app-page-layout>
+  `
 })
 export class ResultFormComponent implements OnInit {
-  readonly AlertTriangle = AlertTriangle;
-  readonly Zap = Zap;
-  readonly Check = Check;
-
   isEdit = false;
-  loading = false;
-  saving  = false;
-  error   = '';
+  readonly saving = signal(false);
+  readonly error = signal('');
+  form = { athleteId: '', competitionId: '', epreuve: '', temps: '', rang: null as number | null };
 
-  form: Partial<Result> & { athleteId: string; eventId: string } = {
-    athleteId:    '',
-    eventId:      '',
-    rank:         1,
-    tempsDisplay: '',
-    tempsMs:      undefined,
-    pointsFina:   undefined,
-    tour:         'finale',
-    lane:         undefined,
-    isRecord:     false,
-    status:       'OK',
-  };
-
-  tours    = ['series', 'demi', 'finale'];
-  statuses = [
-    { value: 'EN_ATTENTE', label: 'En attente' },
-    { value: 'VALIDE',     label: 'Validé' },
-    { value: 'DQ',         label: 'Disqualifié (DQ)' },
-    { value: 'DNS',        label: 'Non partant (DNS)' },
-    { value: 'DNF',        label: 'Non arrivé (DNF)' },
-  ];
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private service: ResultsService
-  ) {}
+  constructor(private route: ActivatedRoute, private router: Router, private api: ApiService) {}
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    // Pre-fill eventId from query param if coming from competition detail
-    const eventId = this.route.snapshot.queryParamMap.get('eventId');
-    if (eventId) this.form.eventId = eventId;
-
+    const compId = this.route.snapshot.queryParamMap.get('competitionId');
+    if (compId) this.form.competitionId = compId;
     if (id) {
       this.isEdit = true;
+      this.api.get<any>(`/results/${id}`).subscribe({
+        next: r => {
+          const d = r?.data ?? r;
+          this.form = {
+            athleteId:    String(d.athlete_id ?? d.athleteId ?? ''),
+            competitionId: String(d.competition_id ?? d.competitionId ?? ''),
+            epreuve:      d.epreuve ?? '',
+            temps:        d.temps   ?? '',
+            rang:         d.rang    ?? null,
+          };
+        }
+      });
     }
   }
 
   save(): void {
-    if (!this.form.athleteId || !this.form.eventId || this.form.rank == null) {
-      this.error = 'Athlète ID, Épreuve ID et Rang sont obligatoires.';
+    if (!this.form.athleteId || !this.form.competitionId || !this.form.epreuve) {
+      this.error.set('Athlète, Compétition et Épreuve sont obligatoires.');
       return;
     }
-    this.saving = true;
-    this.error  = '';
-
-    const payload: any = {
-      athleteId:    Number(this.form.athleteId),
-      eventId:      Number(this.form.eventId),
-      rank:         this.form.rank,
-      tempsDisplay: this.form.tempsDisplay || null,
-      tempsMs:      this.form.tempsMs      || null,
-      pointsFina:   this.form.pointsFina   || null,
-      tour:         this.form.tour         || null,
-      lane:         this.form.lane         || null,
-      isRecord:     this.form.isRecord     || false,
+    this.saving.set(true);
+    this.error.set('');
+    const payload = {
+      athlete_id:     Number(this.form.athleteId),
+      competition_id: Number(this.form.competitionId),
+      epreuve:        this.form.epreuve,
+      temps:          this.form.temps  || null,
+      rang:           this.form.rang   || null,
     };
-
     const id = this.route.snapshot.paramMap.get('id');
-    const req$ = id
-      ? this.service.updateResult(id, payload)
-      : this.service.createResult(payload);
-
-    req$.subscribe({
-      next: () => { this.saving = false; this.router.navigate(['/results']); },
-      error: (err) => {
-        this.saving = false;
-        this.error = err.status === 409
-          ? 'Un résultat existe déjà pour cet athlète et cette épreuve (HTTP 409).'
-          : 'Une erreur est survenue. Vérifiez les données.';
-      }
+    const obs = id ? this.api.put<any>(`/results/${id}`, payload) : this.api.post<any>('/results', payload);
+    obs.subscribe({
+      next:  () => { this.saving.set(false); this.router.navigate(['/results']); },
+      error: (e: any) => { this.error.set(e?.error?.message ?? 'Une erreur est survenue.'); this.saving.set(false); }
     });
-  }
-
-  cancel(): void {
-    this.router.navigate(['/results']);
   }
 }

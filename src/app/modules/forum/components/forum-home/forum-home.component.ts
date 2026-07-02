@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../../core/services/api.service';
 import { PageLayoutComponent } from '../../../../shared/components/page-layout/page-layout.component';
+import { TranslationService } from '../../../../core/i18n/translation.service';
 import { MessageCircle } from 'lucide-angular';
 
 @Component({
@@ -13,16 +14,16 @@ import { MessageCircle } from 'lucide-angular';
         <div class="mb-12">
           <div class="flex items-center gap-4 mb-6">
             <span class="h-px w-10 bg-accent"></span>
-            <span class="text-xs tracking-[0.3em] uppercase text-white/70">Forum</span>
+            <span class="text-xs tracking-[0.3em] uppercase text-white/70">{{ 'forum.home.kicker' | translate }}</span>
           </div>
           <h1 class="font-serif text-5xl lg:text-7xl leading-[0.95]">
-            Discussions <br/><span class="italic text-gold">& échanges.</span>
+            {{ 'forum.home.titleLine1' | translate }} <br/><span class="italic text-gold">{{ 'forum.home.titleItalic' | translate }}</span>
           </h1>
         </div>
         @if (loading()) {
-          <div class="text-white/40 text-center py-20">Chargement…</div>
+          <div class="text-white/40 text-center py-20">{{ 'common.loading' | translate }}</div>
         } @else if (categories().length === 0) {
-          <div class="text-white/40 text-center py-20">Aucune catégorie de forum.</div>
+          <div class="text-white/40 text-center py-20">{{ 'forum.home.empty' | translate }}</div>
         } @else {
           <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             @for (cat of categories(); track cat.id) {
@@ -32,12 +33,12 @@ import { MessageCircle } from 'lucide-angular';
                   <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background:rgba(225,6,0,0.1)">
                     <lucide-icon [img]="MessageCircle" class="text-accent w-5 h-5"></lucide-icon>
                   </div>
-                  <span class="opacity-0 group-hover:opacity-100 transition-opacity text-lg">→</span>
+                  <span class="opacity-0 group-hover:opacity-100 transition-opacity text-lg rtl-flip">→</span>
                 </div>
                 <h3 class="font-serif text-xl mb-2">{{ cat.nom }}</h3>
                 <p class="text-sm text-white/50 mb-4 line-clamp-2">{{ cat.description }}</p>
                 <div class="flex items-center gap-4 text-xs text-white/30">
-                  <span>{{ cat.nbSujets || 0 }} sujets</span>
+                  <span>{{ i18n.t('forum.home.topicsCount', { count: cat.nbSujets || 0 }) }}</span>
                   <span class="px-2 py-0.5 rounded-full border border-white/10">{{ cat.categorie?.toLowerCase() }}</span>
                 </div>
               </a>
@@ -53,7 +54,7 @@ export class ForumHomeComponent implements OnInit {
   readonly loading = signal(false);
   readonly MessageCircle = MessageCircle;
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, readonly i18n: TranslationService) {}
   ngOnInit(): void {
     this.loading.set(true);
     this.api.get<any>('/forums').subscribe({

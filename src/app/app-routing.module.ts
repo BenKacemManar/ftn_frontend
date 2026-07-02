@@ -36,6 +36,14 @@ const routes: Routes = [
     loadChildren: () => import('./modules/auth/auth.module').then(m => m.AuthModule)
   },
   {
+    path: 'reservations',
+    loadChildren: () => import('./modules/reservations/reservations.module').then(m => m.ReservationsModule)
+  },
+  {
+    path: 'evenements',
+    loadChildren: () => import('./modules/evenements/evenements.module').then(m => m.EvenementsModule)
+  },
+  {
     path: 'admin',
     canActivate: [AuthGuard],
     data: { roles: ['ADMIN'] },

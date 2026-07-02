@@ -12,6 +12,9 @@ import { PageLayoutComponent } from './components/page-layout/page-layout.compon
 import { FilterBarComponent } from './components/filter-bar/filter-bar.component';
 import { ModalComponent } from './components/modal/modal.component';
 import { EmojiPickerComponent } from './components/emoji-picker/emoji-picker.component';
+import { LanguageSwitcherComponent } from './components/language-switcher/language-switcher.component';
+import { LanguageSplashComponent } from './components/language-splash/language-splash.component';
+import { TranslatePipe } from '../core/i18n/translate.pipe';
 
 @NgModule({
   declarations: [
@@ -23,6 +26,9 @@ import { EmojiPickerComponent } from './components/emoji-picker/emoji-picker.com
     FilterBarComponent,
     ModalComponent,
     EmojiPickerComponent,
+    LanguageSwitcherComponent,
+    LanguageSplashComponent,
+    TranslatePipe,
   ],
   imports: [CommonModule, RouterModule, FormsModule, LucideAngularModule],
   exports: [
@@ -34,6 +40,9 @@ import { EmojiPickerComponent } from './components/emoji-picker/emoji-picker.com
     FilterBarComponent,
     ModalComponent,
     EmojiPickerComponent,
+    LanguageSwitcherComponent,
+    LanguageSplashComponent,
+    TranslatePipe,
     CommonModule,
     RouterModule,
     FormsModule,
