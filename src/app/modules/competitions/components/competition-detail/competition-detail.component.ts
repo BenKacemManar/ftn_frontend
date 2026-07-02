@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { Calendar, MapPin, Pencil, Trash2, Waves } from 'lucide-angular';
 import { ApiService } from '../../../../core/services/api.service';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -149,19 +150,26 @@ export class CompetitionDetailComponent implements OnInit {
   }
 
   registerForEvent(ev: any): void {
-    // L'athlète est supposé partager son id avec son compte utilisateur (convention déjà utilisée par MyResultsComponent).
-    const athleteId = this.auth.currentUser?.id;
-    if (!athleteId) return;
+    const userId = this.auth.currentUser?.id;
+    if (!userId) return;
     this.registeringEventId.set(ev.id);
     this.regMsg.set(null);
-    this.api.post<any>('/registrations', { athleteId, eventId: ev.id }).subscribe({
+    // userId (compte) et athleteId (profil sportif) sont deux entités distinctes ; on résout
+    // le profil athlète lié au compte connecté via /athletes/by-user/{userId}.
+    this.api.get<any>(`/athletes/by-user/${userId}`).pipe(
+      switchMap(a => {
+        const athleteId = (a?.data ?? a)?.id;
+        return this.api.post<any>('/registrations', { athleteId, eventId: ev.id });
+      })
+    ).subscribe({
       next: () => {
         this.registeringEventId.set(null);
         this.regMsg.set({ eventId: ev.id, text: 'Inscription envoyée, en attente de validation.', error: false });
       },
       error: (e: any) => {
         this.registeringEventId.set(null);
-        this.regMsg.set({ eventId: ev.id, text: e?.error?.message ?? "Échec de l'inscription.", error: true });
+        const msg = e?.status === 404 ? "Aucun profil athlète associé à ce compte." : (e?.error?.message ?? "Échec de l'inscription.");
+        this.regMsg.set({ eventId: ev.id, text: msg, error: true });
       }
     });
   }

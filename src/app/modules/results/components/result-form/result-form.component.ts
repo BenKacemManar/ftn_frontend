@@ -50,6 +50,11 @@ const ROUNDS = ['SERIES', 'DEMI_FINALE', 'FINALE'];
               class="block w-full bg-transparent border-b border-white/20 pb-3 outline-none text-white font-mono">
           </div>
           <div>
+            <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Points FINA</label>
+            <input type="number" step="0.01" [(ngModel)]="form.pointsFina" name="pointsFina" min="0"
+              class="block w-full bg-transparent border-b border-white/20 pb-3 outline-none text-white">
+          </div>
+          <div>
             <label class="block text-[10px] tracking-[0.3em] uppercase text-white/50 mb-2">Tour</label>
             <select [(ngModel)]="form.tour" name="tour"
               class="block w-full bg-transparent border-b border-white/20 pb-3 outline-none text-white">
@@ -85,7 +90,7 @@ export class ResultFormComponent implements OnInit {
   readonly error = signal('');
   readonly events = signal<any[]>([]);
   readonly ROUNDS = ROUNDS;
-  form: any = { eventId: '', athleteId: '', rank: null, tempsMs: null, tempsDisplay: '', tour: '', lane: null, isRecord: false };
+  form: any = { eventId: '', athleteId: '', rank: null, tempsMs: null, tempsDisplay: '', pointsFina: null, tour: '', lane: null, isRecord: false };
 
   constructor(private route: ActivatedRoute, private router: Router, private api: ApiService) {}
 
