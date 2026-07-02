@@ -3,6 +3,7 @@ import { AdminLayoutComponent } from '../admin-layout/admin-layout.component';
 import { ReservationService } from '../../../reservations/services/reservation.service';
 import { ApiService } from '../../../../core/services/api.service';
 import { Check, X } from 'lucide-angular';
+import { ReservationExportService } from '../../../reservations/services/reservation-export.service';
 
 @Component({
   selector: 'app-reservations-admin',
@@ -11,6 +12,20 @@ import { Check, X } from 'lucide-angular';
       <div>
         <div class="flex items-center justify-between mb-8">
           <h1 class="font-serif text-3xl">Réservations</h1>
+          <div class="flex gap-2">
+             <a routerLink="/admin/reservations/schedule"
+      class="px-4 py-2 rounded-full text-xs border border-white/20 text-white/70 hover:border-white/40 transition-colors">
+      Voir le planning
+    </a>
+            <button type="button" (click)="exportWeekCsv()"
+              class="px-4 py-2 rounded-full text-xs border border-white/20 text-white/70 hover:border-white/40 transition-colors">
+              Exporter la semaine (CSV)
+            </button>
+            <button type="button" (click)="exportWeekPdf()"
+              class="px-4 py-2 rounded-full text-xs border border-white/20 text-white/70 hover:border-white/40 transition-colors">
+              Exporter la semaine (PDF)
+            </button>
+          </div>
         </div>
 
         @if (loading()) {
@@ -130,7 +145,8 @@ export class ReservationsAdminComponent implements OnInit {
 
   constructor(
     private reservationService: ReservationService,
-    private api: ApiService
+    private api: ApiService,
+    private exportService: ReservationExportService
   ) {}
 
   ngOnInit(): void { this.load(); }
@@ -146,19 +162,56 @@ export class ReservationsAdminComponent implements OnInit {
     });
   }
 
+  private getCurrentWeekRange(): { start: Date; end: Date } {
+    const now = new Date();
+    const day = now.getDay(); // 0 = Sunday
+    const diffToMonday = day === 0 ? -6 : 1 - day;
+    const start = new Date(now);
+    start.setDate(now.getDate() + diffToMonday);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    end.setHours(23, 59, 59, 999);
+    return { start, end };
+  }
+
+  private toIsoDate(d: Date): string {
+    return d.toISOString().split('T')[0];
+  }
+
+  get thisWeekReservations(): any[] {
+    const { start, end } = this.getCurrentWeekRange();
+    return this.reservations().filter(r => {
+      if (!r.date) return false;
+      const d = new Date(r.date + 'T00:00:00');
+      return d >= start && d <= end;
+    });
+  }
+
+  exportWeekCsv(): void {
+    const { start } = this.getCurrentWeekRange();
+    this.exportService.exportCsv(this.thisWeekReservations, `planning-semaine-${this.toIsoDate(start)}.csv`);
+  }
+
+  exportWeekPdf(): void {
+    const { start, end } = this.getCurrentWeekRange();
+    const title = `Planning du ${this.formatDate(this.toIsoDate(start))} au ${this.formatDate(this.toIsoDate(end))}`;
+    this.exportService.exportSchedulePdf(this.thisWeekReservations, title, `planning-semaine-${this.toIsoDate(start)}.pdf`);
+  }
+
   openAssign(r: any): void {
-  this.assignError.set('');
-  this.selectedLanes.set(new Set());
-  this.assigning.set(r);
-  this.api.get<any>(`/pools/${r.poolId}`).subscribe({
-    next: (res) => {
-      const pool = res?.data ?? res;
-      const count = pool?.nbCouloirs ?? pool?.nb_couloirs ?? 0;
-      this.poolLaneNumbers.set(Array.from({ length: count }, (_, i) => i + 1));
-    },
-    error: () => this.assignError.set('Impossible de charger les couloirs de la piscine.')
-  });
-}
+    this.assignError.set('');
+    this.selectedLanes.set(new Set());
+    this.assigning.set(r);
+    this.api.get<any>(`/pools/${r.poolId}`).subscribe({
+      next: (res) => {
+        const pool = res?.data ?? res;
+        const count = pool?.nbCouloirs ?? pool?.nb_couloirs ?? 0;
+        this.poolLaneNumbers.set(Array.from({ length: count }, (_, i) => i + 1));
+      },
+      error: () => this.assignError.set('Impossible de charger les couloirs de la piscine.')
+    });
+  }
 
   closeAssign(): void {
     this.assigning.set(null);

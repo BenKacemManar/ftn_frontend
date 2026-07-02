@@ -2,6 +2,7 @@
 import { ReservationService } from '../../services/reservation.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Reservation } from '../../../../core/models/reservation.model';
+import { ReservationExportService } from '../../services/reservation-export.service';
 
 @Component({
   selector: 'app-reservation-list',
@@ -15,7 +16,8 @@ export class ReservationListComponent implements OnInit {
 
   constructor(
     private reservationService: ReservationService,
-    private authService: AuthService
+    private authService: AuthService,
+    private exportService: ReservationExportService
   ) {}
 
   get isAdmin(): boolean {
@@ -72,5 +74,9 @@ export class ReservationListComponent implements OnInit {
       ANNULEE: 'Annulée'
     };
     return labels[status] || status;
+  }
+
+  downloadReceipt(r: Reservation): void {
+    this.exportService.downloadReceipt(r);
   }
 }

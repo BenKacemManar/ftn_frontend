@@ -1,0 +1,110 @@
+<app-admin-layout>
+  <div class="schedule-page">
+
+    <div class="schedule-header">
+      <h1 class="font-serif text-3xl">Planning des couloirs</h1>
+
+      <div class="schedule-controls">
+       <div class="pool-select" [class.pool-select--open]="poolDropdownOpen">
+  <button type="button" class="pool-select-trigger" (click)="togglePoolDropdown()">
+    <span>{{ selectedPool ? (selectedPool.nom + ' — ' + selectedPool.ville) : 'Sélectionner une piscine' }}</span>
+    <span class="pool-select-caret">⌄</span>
+  </button>
+
+  <ul class="pool-select-list" *ngIf="poolDropdownOpen">
+    <li *ngFor="let p of pools"
+        [class.active]="p.id === selectedPoolId"
+        (click)="selectPool(p.id)">
+      {{ p.nom }} — {{ p.ville }}
+    </li>
+  </ul>
+</div>
+
+        <div class="date-nav">
+          <button type="button" class="nav-btn" (click)="shiftDate(-1)">‹</button>
+          <input type="date" [(ngModel)]="selectedDate" (ngModelChange)="onDateChange()" class="control-date" />
+          <button type="button" class="nav-btn" (click)="shiftDate(1)">›</button>
+        </div>
+
+        <button type="button" class="today-btn" (click)="goToday()">Aujourd'hui</button>
+      </div>
+    </div>
+
+    <p class="selected-date-label">{{ formattedSelectedDate }}</p>
+
+    <div class="legend">
+      <span class="legend-item"><span class="swatch swatch--confirmed"></span> Confirmée</span>
+      <span class="legend-item"><span class="swatch swatch--pending"></span> En attente</span>
+      <span class="legend-item"><span class="swatch swatch--free"></span> Libre</span>
+    </div>
+
+    <div *ngIf="error" class="state-msg state-error">{{ error }}</div>
+    <div *ngIf="loading" class="state-msg">Chargement…</div>
+
+    <div *ngIf="!loading && !error" class="schedule-scroll">
+      <div class="schedule-inner">
+
+        <!-- header row: hour ticks -->
+        <div class="grid-row grid-row--header">
+          <div class="lane-label lane-label--sticky"></div>
+          <div class="timeline" [style.width.px]="timelineWidthPx">
+            <span class="hour-tick" *ngFor="let mark of hourMarks" [style.left.px]="mark.leftPx">
+              {{ mark.hour }}:00
+            </span>
+            <div class="now-line" *ngIf="nowLinePx !== null" [style.left.px]="nowLinePx"></div>
+          </div>
+        </div>
+
+        <!-- one row per lane -->
+        <div class="grid-row" *ngFor="let lane of laneNumbers">
+          <div class="lane-label lane-label--sticky">Couloir {{ lane }}</div>
+          <div class="timeline" [style.width.px]="timelineWidthPx">
+            <div class="hour-gridline" *ngFor="let mark of hourMarks" [style.left.px]="mark.leftPx"></div>
+            <div class="now-line" *ngIf="nowLinePx !== null" [style.left.px]="nowLinePx"></div>
+
+            <ng-container *ngIf="laneBlocks[lane] as block; else laneFree">
+              <div class="event-block event-block--confirmed"
+                   [style.left.px]="leftFor(block)"
+                   [style.width.px]="widthFor(block)"
+                   [title]="tooltipFor(block.reservation)">
+                <span class="event-time">{{ formatTime(block.reservation.heureDebut) }}–{{ formatTime(block.reservation.heureFin) }}</span>
+                <span class="event-name">{{ whoLabel(block.reservation) }}</span>
+              </div>
+            </ng-container>
+            <ng-template #laneFree>
+              <span class="lane-free-hint">Libre</span>
+            </ng-template>
+          </div>
+        </div>
+
+        <!-- pending requests without an assigned lane yet -->
+        <div class="pending-section" *ngIf="pendingRows.length">
+          <div class="pending-title">En attente — couloir non attribué</div>
+
+          <div class="grid-row" *ngFor="let row of pendingRows">
+            <div class="lane-label lane-label--sticky lane-label--pending">—</div>
+            <div class="timeline" [style.width.px]="timelineWidthPx">
+              <div class="hour-gridline" *ngFor="let mark of hourMarks" [style.left.px]="mark.leftPx"></div>
+              <div class="now-line" *ngIf="nowLinePx !== null" [style.left.px]="nowLinePx"></div>
+
+              <div class="event-block event-block--pending"
+                   *ngFor="let block of row.blocks"
+                   [style.left.px]="leftFor(block)"
+                   [style.width.px]="widthFor(block)"
+                   [title]="tooltipFor(block.reservation)">
+                <span class="event-time">{{ formatTime(block.reservation.heureDebut) }}–{{ formatTime(block.reservation.heureFin) }}</span>
+                <span class="event-name">{{ whoLabel(block.reservation) }} ({{ block.reservation.nbCouloirs }} couloir(s))</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div *ngIf="!loading && !error && laneNumbers.length === 0" class="state-msg">
+      Sélectionnez une piscine pour afficher son planning.
+    </div>
+
+  </div>
+</app-admin-layout>

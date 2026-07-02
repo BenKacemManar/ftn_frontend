@@ -80,10 +80,15 @@
         </div>
       </div>
 
-<div class="card-footer" *ngIf="r.statut !== 'ANNULEE' && !isAdmin">
-        <button class="btn-cancel" (click)="cancel(r.id)">
-          Annuler la réservation
-        </button>
+<div class="card-footer" *ngIf="r.statut !== 'ANNULEE'">
+        <div class="footer-actions">
+          <button *ngIf="r.statut === 'CONFIRMEE'" class="btn-receipt" (click)="downloadReceipt(r)">
+            Reçu
+          </button>
+          <button *ngIf="!isAdmin" class="btn-cancel" (click)="cancel(r.id)">
+            Annuler
+          </button>
+        </div>
       </div>
 
     </div>

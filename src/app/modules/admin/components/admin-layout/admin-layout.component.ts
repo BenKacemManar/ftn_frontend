@@ -26,7 +26,7 @@ const LINKS = [
 @Component({
   selector: 'app-admin-layout',
   template: `
-    <div class="min-h-screen bg-ink text-white flex">
+    <div class="h-screen bg-ink text-white flex overflow-hidden">
       <aside [class]="collapsed() ? 'w-16' : 'w-64'"
         class="fixed top-0 left-0 h-full flex flex-col border-r border-white/10 bg-[#0d0000] transition-all duration-300 z-40">
         <div class="h-0.5 w-full" style="background:linear-gradient(90deg,#E10600 0%,#E10600 50%,#D4AF37 50%,#D4AF37 100%)"></div>
@@ -78,12 +78,26 @@ const LINKS = [
           </button>
         </div>
       </aside>
-      <div [class]="collapsed() ? 'ml-16' : 'ml-64'" class="flex-1 transition-all duration-300 min-h-screen p-8">
-        <ng-content></ng-content>
-      </div>
+     <div [class]="collapsed() ? 'ml-16' : 'ml-64'" class="admin-content flex-1 transition-all duration-300 h-screen overflow-y-auto overflow-x-hidden p-8">
+  <ng-content></ng-content>
+</div>
     </div>
-  `
+  `,
+  
+ styles: [`
+    nav,
+    .admin-content {
+      scrollbar-width: none;       /* Firefox */
+      -ms-overflow-style: none;    /* old Edge */
+    }
+    nav::-webkit-scrollbar,
+    .admin-content::-webkit-scrollbar {   /* Chrome / Safari */
+      display: none;
+    }
+  `]
+
 })
+
 export class AdminLayoutComponent {
   readonly collapsed = signal(false);
   readonly links = LINKS;

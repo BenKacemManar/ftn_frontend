@@ -21,11 +21,14 @@ import { ProgramsAdminComponent } from './components/programs-admin/programs-adm
 import { ProgramFormComponent } from './components/program-form/program-form.component';
 import { ClassementsAdminComponent } from './components/classements-admin/classements-admin.component';
 import { ReservationsAdminComponent } from './components/reservations-admin/reservations-admin.component';
+import { ReservationScheduleGridComponent } from './components/reservation-schedule-grid/reservation-schedule-grid.component';
+
 @NgModule({
   declarations: [
     AdminLayoutComponent,
     DashboardComponent,
     ReservationsAdminComponent,
+    ReservationScheduleGridComponent,
     AthletesAdminComponent,
     AthleteFormComponent,
     ClubsAdminComponent,

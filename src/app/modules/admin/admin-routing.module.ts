@@ -17,6 +17,7 @@ import { ClubStaffAdminComponent } from './components/club-staff-admin/club-staf
 import { ProgramsAdminComponent } from './components/programs-admin/programs-admin.component';
 import { ClassementsAdminComponent } from './components/classements-admin/classements-admin.component';
 import { ReservationsAdminComponent } from './components/reservations-admin/reservations-admin.component';
+import { ReservationScheduleGridComponent } from './components/reservation-schedule-grid/reservation-schedule-grid.component';
 
 const routes: Routes = [
   { path: '', component: DashboardComponent },
@@ -32,6 +33,7 @@ const routes: Routes = [
   { path: 'programs', component: ProgramsAdminComponent },
   { path: 'classements', component: ClassementsAdminComponent },
   { path: 'reservations', component: ReservationsAdminComponent },
+  { path: 'reservations/schedule', component: ReservationScheduleGridComponent },
 ];
 
 @NgModule({

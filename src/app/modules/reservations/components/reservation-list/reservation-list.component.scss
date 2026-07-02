@@ -339,7 +339,8 @@
 }
 
 .btn-cancel {
-  width: 100%;
+  width: auto;
+  flex: 1;
   background: transparent;
   border: 1px solid rgba(200,16,46,0.35);
   color: rgba(255,107,122,0.8);
@@ -355,6 +356,32 @@
     background: #C8102E;
     color: #fff;
     border-color: #C8102E;
+  }
+}
+
+.footer-actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.btn-receipt {
+  width: auto;
+  flex: 1;
+  background: transparent;
+  border: 1px solid rgba(255,215,0,0.35);
+  color: #FFD700;
+  padding: 0.62rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+  letter-spacing: 0.02em;
+
+  &:hover {
+    background: #FFD700;
+    color: #101010;
+    border-color: #FFD700;
   }
 }
 
