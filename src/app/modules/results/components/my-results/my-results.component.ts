@@ -65,19 +65,11 @@ export class MyResultsComponent implements OnInit {
     const uid = this.auth.currentUser?.id;
     if (!uid) return;
     this.loading.set(true);
-    this.api.get<any>(`/results/athlete/${uid}`).subscribe({
+    // /resultats (et non /results legacy) est la table alimentant les classements.
+    this.api.get<any>(`/resultats/athlete/${uid}`).subscribe({
       next: r => {
         const list = Array.isArray(r) ? r : (r?.data ?? r?.content ?? []);
-        this.results.set(list.map((x: any) => ({
-          ...x,
-          status: RS[x.statut ?? x.status] ?? x.statut ?? x.status,
-          eventLabel: x.epreuve ?? x.eventLabel ?? null,
-          competitionName: x.competitionNom ?? x.competitionName ?? null,
-          tempsDisplay: x.temps ?? x.tempsDisplay ?? null,
-          rank: x.rang ?? x.rank ?? null,
-          pointsFina: x.pointsFina ?? null,
-          isRecord: x.isRecord ?? false,
-        })));
+        this.results.set(list.map((x: any) => ({ ...x, status: RS[x.status] ?? x.status })));
         this.total = list.length;
         this.loading.set(false);
       },

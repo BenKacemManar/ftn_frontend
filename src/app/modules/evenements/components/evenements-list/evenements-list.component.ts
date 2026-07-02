@@ -49,7 +49,7 @@ type FilterTab = 'TOUS' | EvenementType;
         } @else {
           <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             @for (ev of filteredItems; track ev.id) {
-              <div class="border border-white/10 rounded-xl p-6 hover:border-white/25 transition-colors group">
+              <a [routerLink]="['/evenements', ev.id]" class="border border-white/10 rounded-xl p-6 hover:border-white/25 transition-colors group block">
                 <div class="flex items-start justify-between gap-3 mb-4">
                   <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] tracking-[0.2em] uppercase font-medium"
                     [style.background]="typeColor(ev.type).bg"
@@ -84,7 +84,7 @@ type FilterTab = 'TOUS' | EvenementType;
                     </div>
                   }
                 </div>
-              </div>
+              </a>
             }
           </div>
         }

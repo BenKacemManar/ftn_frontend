@@ -25,6 +25,14 @@ export class ApiService {
     return this.http.put<T>(`${this.base}${path}`, body);
   }
 
+  patch<T>(path: string, params: Record<string, any> = {}): Observable<T> {
+    let hp = new HttpParams();
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== null && v !== undefined && v !== '') hp = hp.set(k, String(v));
+    });
+    return this.http.patch<T>(`${this.base}${path}`, null, { params: hp });
+  }
+
   delete<T>(path: string): Observable<T> {
     return this.http.delete<T>(`${this.base}${path}`);
   }

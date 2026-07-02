@@ -20,9 +20,11 @@ export interface Evenement {
 export interface Participation {
   id: number;
   evenementId: number;
+  evenementTitre?: string;
   userId: number;
+  userName?: string;
   message?: string;
-  status: 'EN_ATTENTE' | 'VALIDEE' | 'ANNULEE';
+  status: 'EN_ATTENTE' | 'ACCEPTEE' | 'REFUSEE';
 }
 
 export interface Inscription {

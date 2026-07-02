@@ -68,8 +68,21 @@ const S2F: Record<string,string> = { PLANIFIEE:'upcoming',EN_COURS:'ongoing',TER
                   <div class="grid grid-cols-12 items-center py-4 border-b border-white/10 hover:bg-white/[0.02] px-2">
                     <div class="col-span-5 font-medium">{{ ev.label || (ev.distance + 'm ' + ev.swimStyle) }}</div>
                     <div class="col-span-3 text-sm text-white/50">{{ (ev.gender==='M' ? 'competitions.detail.genderMale' : 'competitions.detail.genderFemale') | translate }}</div>
-                    <div class="col-span-2 text-sm text-white/50">{{ ev.ageCategory }}</div>
+                    <div class="col-span-1 text-sm text-white/50">{{ ev.ageCategory }}</div>
                     <div class="col-span-2"><app-status-badge [status]="S2F[ev.status] ?? ev.status" /></div>
+                    <div class="col-span-1 flex justify-end">
+                      @if (canSelfRegister()) {
+                        <button (click)="registerForEvent(ev)" [disabled]="registeringEventId() === ev.id"
+                          class="px-3 py-1.5 rounded-full bg-accent text-white text-xs hover:bg-white hover:text-black transition-colors disabled:opacity-50">
+                          {{ registeringEventId() === ev.id ? '…' : "S'inscrire" }}
+                        </button>
+                      }
+                    </div>
+                    @if (regMsg() && regMsg()!.eventId === ev.id) {
+                      <div class="col-span-12 mt-2 text-xs" [style.color]="regMsg()!.error ? '#E10600' : '#10B981'">
+                        {{ regMsg()!.text }}
+                      </div>
+                    }
                   </div>
                 }
               </div>
@@ -101,6 +114,8 @@ export class CompetitionDetailComponent implements OnInit {
   readonly loading = signal(true);
   readonly formOpen = signal(false);
   readonly eventFormOpen = signal(false);
+  readonly registeringEventId = signal<number | null>(null);
+  readonly regMsg = signal<{ eventId: number; text: string; error: boolean } | null>(null);
   id = '';
   readonly S2F = S2F;
 
@@ -128,6 +143,28 @@ export class CompetitionDetailComponent implements OnInit {
 
   onFormSaved(): void { this.formOpen.set(false); this.load(); }
   onEventSaved(): void { this.eventFormOpen.set(false); this.load(); }
+
+  canSelfRegister(): boolean {
+    return this.auth.isLoggedIn() && !this.auth.hasRole('ADMIN') && !this.auth.hasRole('COACH');
+  }
+
+  registerForEvent(ev: any): void {
+    // L'athlète est supposé partager son id avec son compte utilisateur (convention déjà utilisée par MyResultsComponent).
+    const athleteId = this.auth.currentUser?.id;
+    if (!athleteId) return;
+    this.registeringEventId.set(ev.id);
+    this.regMsg.set(null);
+    this.api.post<any>('/registrations', { athleteId, eventId: ev.id }).subscribe({
+      next: () => {
+        this.registeringEventId.set(null);
+        this.regMsg.set({ eventId: ev.id, text: 'Inscription envoyée, en attente de validation.', error: false });
+      },
+      error: (e: any) => {
+        this.registeringEventId.set(null);
+        this.regMsg.set({ eventId: ev.id, text: e?.error?.message ?? "Échec de l'inscription.", error: true });
+      }
+    });
+  }
 
   infos() {
     const c = this.comp();

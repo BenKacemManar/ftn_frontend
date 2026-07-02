@@ -27,15 +27,20 @@ export class EvenementService {
     return this.api.delete<any>(`/evenements/${id}`);
   }
 
-  publish(id: number): Observable<any> {
-    return this.api.put<any>(`/evenements/${id}/publish`, {});
-  }
-
   getParticipations(id: number): Observable<any> {
     return this.api.get<any>(`/evenements/${id}/participations`);
   }
 
-  updateParticipationStatus(participationId: number, status: string): Observable<any> {
-    return this.api.put<any>(`/evenements/participations/${participationId}/status`, { status });
+  register(evenementId: number, dto: { userId: number; message?: string }): Observable<any> {
+    return this.api.post<any>(`/evenements/${evenementId}/participations`, dto);
+  }
+
+  // Backend exposes PATCH .../participations/{id}/status?status=ACCEPTEE|REFUSEE (query param, not a body).
+  updateParticipationStatus(participationId: number, status: 'ACCEPTEE' | 'REFUSEE'): Observable<any> {
+    return this.api.patch<any>(`/evenements/participations/${participationId}/status`, { status });
+  }
+
+  deleteParticipation(participationId: number): Observable<any> {
+    return this.api.delete<any>(`/evenements/participations/${participationId}`);
   }
 }

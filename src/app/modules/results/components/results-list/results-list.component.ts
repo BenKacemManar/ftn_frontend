@@ -109,19 +109,13 @@ export class ResultsListComponent implements OnInit {
       const sexeMap: Record<string, string> = { M: 'MASCULIN', F: 'FEMININ' };
       p['PEqual_athlete_sexe'] = sexeMap[this.gender] ?? this.gender;
     }
-    this.api.get<any>('/results', p).subscribe({
+    // /resultats (ResultatController) est la table réellement utilisée par les classements et le rebuild —
+    // /results (legacy) écrit dans une table disjointe, invisible depuis les classements.
+    this.api.get<any>('/resultats', p).subscribe({
       next: r => {
         this.results.set((r?.data ?? r?.content ?? []).map((x: any) => ({
           ...x,
-          status: RS[x.statut ?? x.status] ?? x.statut ?? x.status,
-          athleteName: x.athleteNom ?? x.athleteName ?? null,
-          eventLabel: x.epreuve ?? x.eventLabel ?? null,
-          competitionName: x.competitionNom ?? x.competitionName ?? null,
-          tempsDisplay: x.temps ?? x.tempsDisplay ?? null,
-          rank: x.rang ?? x.rank ?? null,
-          clubName: x.clubNom ?? x.clubName ?? null,
-          pointsFina: x.pointsFina ?? null,
-          isRecord: x.isRecord ?? false,
+          status: RS[x.status] ?? x.status,
         })));
         this.total = r?.totalCount ?? r?.total_count ?? r?.totalElements ?? 0;
         this.loading.set(false);
