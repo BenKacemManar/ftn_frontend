@@ -1,0 +1,172 @@
+================================================================================
+  SCENARIO DE TEST — MODULES EVENEMENTS / COMPETITIONS / RESULTATS & CLASSEMENTS
+  Projet : FRONT_FINAL  <->  BACKEND_FINAL
+================================================================================
+
+--------------------------------------------------------------------------------
+ENVIRONNEMENT
+--------------------------------------------------------------------------------
+Frontend   : http://localhost:4200        (FRONT_FINAL,  ng serve)
+Backend    : http://localhost:8082/api/v1 (BACKEND_FINAL, docker)
+Base       : PostgreSQL sur localhost:5433 (conteneur backend-final-db)
+
+
+--------------------------------------------------------------------------------
+COMPTES DE TEST
+--------------------------------------------------------------------------------
+ROLE        | EMAIL                       | MOT DE PASSE  | DETAIL
+------------|-----------------------------|---------------|--------------------------
+Admin       | admin@ftn.tn                | Admin@2024    | Compte seede (README)
+Athlete 1   | athlete1.test@example.com   | Athlete123!   | Yassine Ben Salah
+            |                             |               | athlete_id=1, club CA
+            |                             |               | LICENCE ACTIVE -> 31/08/2026
+Athlete 2   | athlete2.test@example.com   | Athlete123!   | Fatma Chaieb
+            |                             |               | athlete_id=2, club ALGERIE
+            |                             |               | LICENCE ACTIVE -> 31/08/2026
+
+NB : les deux comptes athletes ont ete relies a des athletes possedant deja une
+     licence VALIDEE. Sans licence active, l'inscription a une epreuve est
+     refusee par le backend (message : "Athlete has no active licence").
+
+
+--------------------------------------------------------------------------------
+ETAPE 1 — ADMIN CREE UN EVENEMENT DE TYPE COMPETITION
+--------------------------------------------------------------------------------
+1. Se connecter : admin@ftn.tn / Admin@2024
+2. Aller sur /admin/evenements  ->  bouton "+ Nouvel evenement"
+3. Remplir :
+      Type         = Competition
+      Titre        = Meeting de verification
+      Debut        = (une date future, ex. 15/08/2026 10:00)
+      Fin          = (ex. 15/08/2026 18:00)
+      Lieu         = Piscine Olympique de Tunis
+      Capacite max = 50
+4. Le bloc "Details competition" apparait -> remplir :
+      Code            = TEST2026
+      Sous-type       = ETE
+      Bassin          = 50m
+      Categories age  = Junior-Senior
+      Cloture inscr.  = (une date future)
+5. Cliquer "Creer".
+
+RESULTAT ATTENDU :
+   - L'evenement apparait dans la liste /admin/evenements (statut BROUILLON).
+   - Une COMPETITION liee est creee automatiquement (type=COMPETITION declenche
+     la creation de la competition en arriere-plan). Verifiable dans /competitions.
+
+
+--------------------------------------------------------------------------------
+ETAPE 2 — ADMIN AJOUTE UNE EPREUVE A LA COMPETITION
+--------------------------------------------------------------------------------
+1. Toujours en admin, aller sur /competitions.
+2. Ouvrir la competition creee a l'etape 1.
+3. Cliquer "+ Ajouter" (une epreuve) et remplir :
+      Style de nage  = LIBRE
+      Distance       = 100
+      Sexe           = F
+      Categorie age  = SENIOR
+      Tour           = FINALE
+      Date           = (date de la competition)
+4. Enregistrer.
+
+RESULTAT ATTENDU :
+   - L'epreuve s'affiche dans la liste des epreuves de la competition.
+   - L'inscription individuelle se fait PAR EPREUVE (pas par competition entiere).
+
+
+--------------------------------------------------------------------------------
+ETAPE 3 — L'ATHLETE 1 (LICENCE VALIDE) S'INSCRIT
+--------------------------------------------------------------------------------
+1. Se deconnecter, se connecter : athlete1.test@example.com / Athlete123!
+2. Aller sur /competitions/{id} de la competition creee.
+3. Sur la ligne de l'epreuve, cliquer "S'inscrire".
+
+RESULTAT ATTENDU :
+   - Message : "Inscription envoyee, en attente de validation."
+   - Le frontend resout d'abord le profil athlete via /athletes/by-user/{userId}
+     puis POST /registrations.
+
+
+--------------------------------------------------------------------------------
+ETAPE 4 — ADMIN VALIDE L'INSCRIPTION
+--------------------------------------------------------------------------------
+1. Se reconnecter en admin.
+2. Aller sur /admin/inscriptions.
+3. Trouver l'inscription d'Athlete 1 (statut EN_ATTENTE) -> cliquer "Valider".
+
+RESULTAT ATTENDU :
+   - Statut passe a VALIDEE.
+
+
+--------------------------------------------------------------------------------
+ETAPE 5 — UN DEUXIEME ATHLETE S'INSCRIT A LA MEME COMPETITION
+--------------------------------------------------------------------------------
+1. Se deconnecter, se connecter : athlete2.test@example.com / Athlete123!
+2. Aller sur la MEME competition /competitions/{id}, MEME epreuve.
+3. Cliquer "S'inscrire".
+4. Se reconnecter en admin -> /admin/inscriptions -> valider l'inscription
+   d'Athlete 2 (ou la laisser EN_ATTENTE pour tester l'affichage du statut).
+
+RESULTAT ATTENDU :
+   - Deux athletes distincts inscrits a la meme competition / epreuve.
+
+
+--------------------------------------------------------------------------------
+ETAPE 6 — RESULTATS ET CALCUL DE SCORE (POINTS FINA)
+--------------------------------------------------------------------------------
+1. En admin, aller sur /results/new.
+2. Saisir le resultat d'Athlete 1 :
+      Epreuve         = (l'epreuve creee a l'etape 2)
+      ID Athlete      = 1
+      Rang            = 1
+      Temps (ms)      = 58340
+      Temps (affiche) = 58.34
+      Points FINA     = 920
+      Tour            = FINALE
+   Enregistrer.
+3. Saisir le resultat d'Athlete 2 :
+      Epreuve         = (la meme)
+      ID Athlete      = 2
+      Rang            = 2
+      Temps (ms)      = 61200
+      Temps (affiche) = 1:01.20
+      Points FINA     = 875
+      Tour            = FINALE
+   Enregistrer.
+4. Aller sur /results : les deux resultats apparaissent (temps, points FINA, rang).
+5. Aller sur /admin/classements -> bouton "Calculer classement".
+      Selectionner l'epreuve + la saison (ex. 2026) -> "Calculer".
+
+RESULTAT ATTENDU :
+   - Le classement se reconstruit a partir des resultats enregistres.
+   - Les deux athletes apparaissent classes selon leurs points FINA
+     (Athlete 1 rang 1 / Athlete 2 rang 2).
+   - Verifiable aussi sur la page publique /results/rankings.
+
+
+--------------------------------------------------------------------------------
+NOTE SUR LE CALCUL DE SCORE
+--------------------------------------------------------------------------------
+Actuellement les points FINA sont SAISIS MANUELLEMENT dans le formulaire de
+resultat. Il n'y a pas (encore) de calcul automatique en direct a partir du
+temps et des records du monde. Si un calculateur live est souhaite (comme dans
+le projet frontend_mission_entreprise), c'est une fonctionnalite a ajouter.
+
+
+--------------------------------------------------------------------------------
+DONNEES DE REFERENCE UTILES
+--------------------------------------------------------------------------------
+Formule FINA (points) : 1000 * (temps_reference / temps_athlete)^3
+   -> plus le temps est proche du record de reference, plus le score est eleve.
+
+Exemples de valeurs coherentes pour la saisie manuelle :
+   100m NL Dames, 58.34  -> ~ 780-820 pts
+   100m NL Dames, 54.67  -> ~ 940-980 pts (proche record national)
+   50m  NL,       23.45  -> ~ 850-900 pts
+
+Statuts possibles :
+   Evenement      : BROUILLON, PUBLIE, INSCRIPTIONS_OUVERTES, EN_COURS, TERMINE, ARCHIVE
+   Participation  : EN_ATTENTE, ACCEPTEE, REFUSEE
+   Inscription    : EN_ATTENTE, VALIDEE, ANNULEE
+   Resultat       : EN_ATTENTE, VALIDE, REJETE
+================================================================================

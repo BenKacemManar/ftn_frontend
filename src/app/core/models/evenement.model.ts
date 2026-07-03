@@ -30,7 +30,12 @@ export interface Participation {
 export interface Inscription {
   id: number;
   athleteId?: number;
+  athleteName?: string;
+  clubName?: string;
   eventId?: number;
+  eventLabel?: string;
+  competitionId?: number;
+  competitionName?: string;
   seedTime?: string;
   status: string;
   registeredAt?: string;

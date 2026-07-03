@@ -63,8 +63,14 @@ const TABS: { label: string; value: TabFilter }[] = [
                 @for (ins of displayedItems; track ins.id) {
                   <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                     <td class="px-4 py-3 text-white/40 text-sm">#{{ ins.id }}</td>
-                    <td class="px-4 py-3 text-sm">Athlète #{{ ins.athleteId ?? '—' }}</td>
-                    <td class="px-4 py-3 text-sm text-white/60 hidden md:table-cell">Épreuve #{{ ins.eventId ?? '—' }}</td>
+                    <td class="px-4 py-3 text-sm">
+                      <div class="font-medium">{{ ins.athleteName || '—' }}</div>
+                      @if (ins.clubName) { <div class="text-xs text-white/40">{{ ins.clubName }}</div> }
+                    </td>
+                    <td class="px-4 py-3 text-sm text-white/60 hidden md:table-cell">
+                      <div>{{ ins.eventLabel || ('Épreuve #' + (ins.eventId ?? '—')) }}</div>
+                      @if (ins.competitionName) { <div class="text-xs text-white/30 truncate max-w-[220px]">{{ ins.competitionName }}</div> }
+                    </td>
                     <td class="px-4 py-3 text-sm text-white/60 hidden lg:table-cell">{{ ins.seedTime || '—' }}</td>
                     <td class="px-4 py-3">
                       <span class="text-xs px-2.5 py-1 rounded-full"

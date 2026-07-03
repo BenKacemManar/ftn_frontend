@@ -33,7 +33,7 @@ import { Check, X, Pencil, Trash2 } from 'lucide-angular';
                   <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                     <td class="px-4 py-3">
                       <div class="font-medium">{{ lic.numero || '#' + lic.id }}</div>
-                      <div class="text-xs text-white/40">Athlète #{{ lic.athleteId }}</div>
+                      <div class="text-xs text-white/40">{{ lic.athleteName || '—' }}@if (lic.clubName) { · {{ lic.clubName }} }</div>
                     </td>
                     <td class="px-4 py-3 text-sm text-white/50 hidden lg:table-cell">{{ lic.type?.toLowerCase() }}</td>
                     <td class="px-4 py-3"><app-status-badge [status]="lic.statut || 'EN_ATTENTE'" /></td>
